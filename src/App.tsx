@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -33,26 +34,22 @@ interface ITrayContext {
     tray_two: ITray['id'],
     card_id: ICard['id'],
   ) => void;
-  setTrays: (trays: ITray[]) => void;
   trays: ITray[];
 }
 
 const TrayContext = createContext<ITrayContext>({
   moveCard: () => {},
-  setTrays: () => {},
   trays: [],
 });
 
 function TrayContextProvider({ children }) {
+  const nextID = useRef(0);
   const [trays, setTrays] = useState<ITray[]>([
     {
       id: 0,
       label: 'new arrivals',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [
-        { id: 0, label: 'item 1', ticks_remaining: 100 },
-        { id: 1, label: 'item 2', ticks_remaining: 100 },
-      ],
+      cards: [],
       extra: {},
       type: TrayType.Hold,
     },
@@ -60,7 +57,7 @@ function TrayContextProvider({ children }) {
       id: 1,
       label: 'doctor1',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [{ id: 2, label: 'item 3', ticks_remaining: 100 }],
+      cards: [],
       extra: {
         energy: 100,
       },
@@ -70,7 +67,7 @@ function TrayContextProvider({ children }) {
       id: 2,
       label: 'doctor2',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [{ id: 3, label: 'item 4', ticks_remaining: 100 }],
+      cards: [],
       extra: {
         energy: 100,
       },
@@ -103,39 +100,67 @@ function TrayContextProvider({ children }) {
     [],
   );
 
+  const make_card = useCallback(() => {
+    nextID.current += 1;
+    return {
+      id: nextID.current,
+      label: `item ${nextID.current}`,
+      ticks_remaining: 100,
+    };
+  }, [nextID]);
+
+  const tick_doctor = useCallback((tray: ITray) => {
+    const extra = tray.extra;
+    if (extra.energy == null || extra.energy == undefined) {
+      return;
+    }
+    if (tray.cards.length == 0) {
+      extra.energy = Math.min(100, extra.energy + 1);
+      return;
+    }
+    extra.energy = Math.max(0, extra.energy - 1);
+    if (extra.energy == 0) {
+      return;
+    }
+
+    const firstCard = tray.cards[0];
+    if (!firstCard) {
+      return;
+    }
+    if (firstCard.ticks_remaining > 0) {
+      firstCard.ticks_remaining -= 1;
+    } else {
+      tray.cards = tray.cards.filter((x) => x.id != firstCard.id);
+    }
+  }, []);
+
+  const tick_hold = useCallback(
+    (tray: ITray) => {
+      if (tray.cards.length > 3) {
+        return;
+      }
+      tray.cards.push(make_card());
+    },
+    [make_card],
+  );
+
   const tick = useCallback(() => {
+    console.log('tick', Date.now());
     setTrays((prevTrays) => {
       const newTrays = [...prevTrays];
       newTrays.forEach((tray) => {
         switch (tray.type) {
           case TrayType.Doctor:
-            {
-              const extra = tray.extra;
-              if (extra.energy == null || extra.energy == undefined) {
-                return;
-              }
-              if (tray.cards.length == 0 && extra.energy < 100) {
-                extra.energy++;
-                return;
-              }
-
-              if (extra.energy <= 0) {
-                return;
-              }
-              extra.energy--;
-            }
+            tick_doctor(tray);
             break;
           case TrayType.Hold:
+            tick_hold(tray);
             return;
-        }
-        const firstCard = tray.cards[0];
-        if (firstCard && firstCard.ticks_remaining > 0) {
-          firstCard.ticks_remaining -= 1;
         }
       });
       return newTrays;
     });
-  }, []);
+  }, [tick_doctor, tick_hold]);
 
   useEffect(() => {
     const interval = setInterval(() => tick(), 1000);
@@ -146,7 +171,6 @@ function TrayContextProvider({ children }) {
     <TrayContext.Provider
       value={{
         moveCard,
-        setTrays,
         trays,
       }}
     >
