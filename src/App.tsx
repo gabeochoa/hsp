@@ -101,16 +101,20 @@ function Tray({
   cards,
   horizontal,
   id,
+  max_cards,
   name,
 }: {
   cards: ICard[];
   horizontal: boolean;
   id: string;
+  max_cards: number;
   name: string;
 }) {
   const { moveCard } = useContext(TrayContext);
   const size = 100;
-  const MAX_CARDS = 3;
+  const tray_height = !horizontal ? size * 1.1 * max_cards : 110;
+  const tray_width = horizontal ? size * 1.1 * max_cards : 110;
+  const num_placeholders = max_cards - cards.length;
 
   return (
     <div
@@ -120,7 +124,7 @@ function Tray({
       }}
       onDrop={(event) => {
         event.preventDefault();
-        if (cards.length == MAX_CARDS) {
+        if (cards.length == max_cards) {
           return;
         }
 
@@ -133,8 +137,8 @@ function Tray({
       <ul
         className={`m-0 list-none border border-indigo-600 bg-indigo-100 p-0 px-1 ${horizontal ? 'flex flex-wrap' : ''}`}
         style={{
-          height: !horizontal ? size * 1.1 * MAX_CARDS : 110,
-          width: horizontal ? size * 1.1 * MAX_CARDS : 110,
+          height: tray_height,
+          width: tray_width,
         }}
       >
         {cards.map((item: ICard) => {
@@ -160,6 +164,21 @@ function Tray({
             </li>
           );
         })}
+        {num_placeholders > 0 &&
+          new Array(num_placeholders).map((x, index) => {
+            return (
+              <li
+                className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
+                key={index}
+                style={{
+                  height: size,
+                  width: size,
+                }}
+              >
+                hi
+              </li>
+            );
+          })}
       </ul>
     </div>
   );
@@ -183,6 +202,7 @@ function Main() {
                 horizontal={false}
                 id={String(tray.id)}
                 key={tray.id}
+                max_cards={5}
                 name={tray.label}
               />
             );
@@ -199,6 +219,7 @@ function Main() {
                 horizontal={true}
                 id={String(tray.id)}
                 key={tray.id}
+                max_cards={3}
                 name={tray.label}
               />
             );
