@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 const Link = (props: JSX.IntrinsicElements['a']) => (
   <a
@@ -16,6 +22,7 @@ interface ITray {
 interface ICard {
   id: number;
   label: string;
+  ticks_remaining: number;
 }
 
 interface ITrayContext {
@@ -41,21 +48,21 @@ function TrayContextProvider({ children }) {
       label: 'new arrivals',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
       cards: [
-        { id: 0, label: 'item 1' },
-        { id: 1, label: 'item 2' },
+        { id: 0, label: 'item 1', ticks_remaining: 100 },
+        { id: 1, label: 'item 2', ticks_remaining: 100 },
       ],
     },
     {
       id: 1,
       label: 'doctor1',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [{ id: 2, label: 'item 3' }],
+      cards: [{ id: 2, label: 'item 3', ticks_remaining: 100 }],
     },
     {
       id: 2,
       label: 'doctor2',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [{ id: 3, label: 'item 4' }],
+      cards: [{ id: 3, label: 'item 4', ticks_remaining: 100 }],
     },
   ]);
 
@@ -83,6 +90,27 @@ function TrayContextProvider({ children }) {
     },
     [],
   );
+
+  const tick = useCallback(() => {
+    setTrays((prevTrays) => {
+      const newTrays = [...prevTrays];
+      newTrays.forEach((tray) => {
+        if (tray.id == 0) {
+          return;
+        }
+        const firstCard = tray.cards[0];
+        if (firstCard && firstCard.ticks_remaining >= 0) {
+          firstCard.ticks_remaining -= 1;
+        }
+      });
+      return newTrays;
+    });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => tick(), 1000);
+    return () => clearInterval(interval);
+  }, [tick]);
 
   return (
     <TrayContext.Provider
@@ -160,7 +188,7 @@ function Tray({
                 width: size,
               }}
             >
-              {item.label}
+              {item.label}({item.ticks_remaining})
             </li>
           );
         })}
@@ -174,9 +202,7 @@ function Tray({
                   height: size,
                   width: size,
                 }}
-              >
-                hi
-              </li>
+              ></li>
             );
           })}
       </ul>
