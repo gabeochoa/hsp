@@ -13,10 +13,19 @@ const Link = (props: JSX.IntrinsicElements['a']) => (
   />
 );
 
+enum TrayType {
+  Hold,
+  Doctor,
+}
+
 interface ITray {
   cards: ICard[];
+  extra: {
+    energy?: number | null;
+  };
   id: number;
   label: string;
+  type: TrayType;
 }
 
 interface ICard {
@@ -51,18 +60,28 @@ function TrayContextProvider({ children }) {
         { id: 0, label: 'item 1', ticks_remaining: 100 },
         { id: 1, label: 'item 2', ticks_remaining: 100 },
       ],
+      extra: {},
+      type: TrayType.Hold,
     },
     {
       id: 1,
       label: 'doctor1',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
       cards: [{ id: 2, label: 'item 3', ticks_remaining: 100 }],
+      extra: {
+        energy: 100,
+      },
+      type: TrayType.Doctor,
     },
     {
       id: 2,
       label: 'doctor2',
       // eslint-disable-next-line sort-keys-fix/sort-keys-fix
       cards: [{ id: 3, label: 'item 4', ticks_remaining: 100 }],
+      extra: {
+        energy: 100,
+      },
+      type: TrayType.Doctor,
     },
   ]);
 
@@ -95,11 +114,28 @@ function TrayContextProvider({ children }) {
     setTrays((prevTrays) => {
       const newTrays = [...prevTrays];
       newTrays.forEach((tray) => {
-        if (tray.id == 0) {
-          return;
+        switch (tray.type) {
+          case TrayType.Doctor:
+            {
+              const extra = tray.extra;
+              if (extra.energy == null || extra.energy == undefined) {
+                return;
+              }
+              if (extra.energy <= 0) {
+                return;
+              }
+              if (tray.cards.length != 0) {
+                extra.energy--;
+              } else {
+                extra.energy++;
+              }
+            }
+            break;
+          case TrayType.Hold:
+            return;
         }
         const firstCard = tray.cards[0];
-        if (firstCard && firstCard.ticks_remaining >= 0) {
+        if (firstCard && firstCard.ticks_remaining > 0) {
           firstCard.ticks_remaining -= 1;
         }
       });
@@ -127,22 +163,36 @@ function TrayContextProvider({ children }) {
 
 function Tray({
   cards,
+  extra,
   horizontal,
   id,
   max_cards,
   name,
+  type,
 }: {
   cards: ICard[];
+  extra: ITray['extra'];
   horizontal: boolean;
   id: string;
   max_cards: number;
   name: string;
+  type: ITray['type'];
 }) {
   const { moveCard } = useContext(TrayContext);
   const size = 100;
   const tray_height = !horizontal ? size * 1.1 * max_cards : 110;
   const tray_width = horizontal ? size * 1.1 * max_cards : 110;
   const num_placeholders = max_cards - cards.length;
+
+  let extra_component = null;
+  switch (type) {
+    case TrayType.Hold:
+      extra_component = null;
+      break;
+    case TrayType.Doctor:
+      extra_component = <div>{extra.energy}</div>;
+      break;
+  }
 
   return (
     <div
@@ -161,7 +211,10 @@ function Tray({
         moveCard(Number(tray_id), Number(id), Number(card_id));
       }}
     >
-      <div className="mb-2 text-xl font-bold">{name}</div>
+      <div className="mb-2 text-xl font-bold">
+        {name}
+        {extra_component}
+      </div>
       <ul
         className={`m-0 list-none border border-indigo-600 bg-indigo-100 p-0 px-1 ${horizontal ? 'flex flex-wrap' : ''}`}
         style={{
@@ -225,11 +278,13 @@ function Main() {
             return (
               <Tray
                 cards={tray.cards}
+                extra={tray.extra}
                 horizontal={false}
                 id={String(tray.id)}
                 key={tray.id}
                 max_cards={5}
                 name={tray.label}
+                type={tray.type}
               />
             );
           })}
@@ -242,11 +297,13 @@ function Main() {
             return (
               <Tray
                 cards={tray.cards}
+                extra={tray.extra}
                 horizontal={true}
                 id={String(tray.id)}
                 key={tray.id}
                 max_cards={3}
                 name={tray.label}
+                type={tray.type}
               />
             );
           })}
