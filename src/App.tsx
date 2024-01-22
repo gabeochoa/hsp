@@ -6,13 +6,6 @@ import {
   useState,
 } from 'react';
 
-const Link = (props: JSX.IntrinsicElements['a']) => (
-  <a
-    className="text-pink-500 underline hover:no-underline dark:text-pink-400"
-    {...props}
-  />
-);
-
 enum TrayType {
   Hold,
   Doctor,
@@ -121,14 +114,15 @@ function TrayContextProvider({ children }) {
               if (extra.energy == null || extra.energy == undefined) {
                 return;
               }
+              if (tray.cards.length == 0 && extra.energy < 100) {
+                extra.energy++;
+                return;
+              }
+
               if (extra.energy <= 0) {
                 return;
               }
-              if (tray.cards.length != 0) {
-                extra.energy--;
-              } else {
-                extra.energy++;
-              }
+              extra.energy--;
             }
             break;
           case TrayType.Hold:
