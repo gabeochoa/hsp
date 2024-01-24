@@ -14,13 +14,10 @@ function NewArrivals() {
         return (
           <Tray
             cards={tray.cards}
-            extra={tray.extra}
             horizontal={false}
-            id={String(tray.id)}
             key={tray.id}
             max_cards={5}
-            name={tray.label}
-            type={tray.type}
+            tray={tray}
           />
         );
       })}
@@ -40,17 +37,22 @@ function Doctors() {
         return (
           <Tray
             cards={tray.cards}
-            extra={tray.extra}
             horizontal={true}
-            id={String(tray.id)}
             key={tray.id}
             max_cards={3}
-            name={tray.label}
-            type={tray.type}
+            tray={tray}
           />
         );
       })}
     </div>
+  );
+}
+
+function Supplies() {
+  const { medicine } = useContext(TrayContext);
+
+  return (
+    <div className="mb-2 text-xl font-bold">Medicine Supplies: {medicine}</div>
   );
 }
 
@@ -59,6 +61,7 @@ function Main() {
     <div className="mx-auto my-8 mt-10 w-8/12 rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
       <h1 className="mb-4 text-4xl">Welcome</h1>
       <div className="columns-2 gap-8">
+        <Supplies />
         <NewArrivals />
         <Doctors />
       </div>

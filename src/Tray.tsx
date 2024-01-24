@@ -1,39 +1,120 @@
 import { useContext } from 'react';
 import { TrayContext } from './TrayContext.tsx';
-import { Card, TrayType } from './Types.tsx';
+import { TrayType } from './Types.tsx';
+
+const CARD_SIZE = 100;
+
+function CardWrapper({ children }) {
+  return (
+    <div
+      className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
+      style={{
+        height: CARD_SIZE,
+        width: CARD_SIZE,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
+  return (
+    <CardWrapper
+      draggable={true}
+      id={`${item.id}`}
+      onDragStart={(event) => {
+        const data = {
+          card_id: event.currentTarget.id,
+          tray_id,
+        };
+        event.dataTransfer.setData('data', JSON.stringify(data));
+      }}
+    >
+      {item.label}({item.ticks_remaining})
+    </CardWrapper>
+  );
+}
+
+function TrayExtra({ tray }: { tray: ITray }) {
+  let extra_component = null;
+  switch (tray.type) {
+    case TrayType.Hold:
+      extra_component = <div />;
+      break;
+    case TrayType.Doctor:
+      extra_component = <div>Energy: {tray.extra.energy}</div>;
+      break;
+  }
+  return extra_component;
+}
+
+function TrayHeader({ tray }: { tray: ITray }) {
+  const { name } = tray;
+  return (
+    <div className="mb-2 text-xl font-bold">
+      {name}
+      <TrayExtra tray={tray} />
+    </div>
+  );
+}
+
+function TrayList({
+  cards,
+  horizontal,
+  max_cards,
+  tray,
+}: {
+  cards: Card[];
+  horizontal: boolean;
+  max_cards: number;
+  tray: ITray;
+}) {
+  const tray_height = CARD_SIZE * 1.1 * (!horizontal ? max_cards : 1);
+  const tray_width = CARD_SIZE * 1.1 * (horizontal ? max_cards : 1);
+  const num_placeholders = max_cards - cards.length;
+
+  return (
+    <ul
+      className={`m-0 list-none border border-indigo-600 bg-indigo-100 p-0 px-1 ${horizontal ? 'flex flex-wrap' : ''}`}
+      style={{
+        height: tray_height,
+        width: tray_width,
+      }}
+    >
+      {cards.map((item: TCard) => {
+        return (
+          <li key={item.id}>
+            <Card item={item} tray_id={tray.id} />
+          </li>
+        );
+      })}
+      {num_placeholders > 0 &&
+        new Array(num_placeholders).map((x, index) => {
+          return (
+            <li key={index}>
+              <CardWrapper />
+            </li>
+          );
+        })}
+    </ul>
+  );
+}
 
 export function Tray({
   cards,
-  extra,
   horizontal,
-  id,
   max_cards,
-  name,
-  type,
+  tray,
 }: {
   cards: Card[];
-  extra: ITray['extra'];
   horizontal: boolean;
-  id: string;
   max_cards: number;
   name: string;
+  tray: ITray;
   type: ITray['type'];
 }) {
   const { moveCard } = useContext(TrayContext);
-  const size = 100;
-  const tray_height = !horizontal ? size * 1.1 * max_cards : 110;
-  const tray_width = horizontal ? size * 1.1 * max_cards : 110;
-  const num_placeholders = max_cards - cards.length;
-
-  let extra_component = null;
-  switch (type) {
-    case TrayType.Hold:
-      extra_component = null;
-      break;
-    case TrayType.Doctor:
-      extra_component = <div>{extra.energy}</div>;
-      break;
-  }
 
   return (
     <div
@@ -49,57 +130,16 @@ export function Tray({
 
         const data = JSON.parse(event.dataTransfer.getData('data'));
         const { card_id, tray_id } = data;
-        moveCard(Number(tray_id), Number(id), Number(card_id));
+        moveCard(Number(tray_id), Number(tray.id), Number(card_id));
       }}
     >
-      <div className="mb-2 text-xl font-bold">
-        {name}
-        {extra_component}
-      </div>
-      <ul
-        className={`m-0 list-none border border-indigo-600 bg-indigo-100 p-0 px-1 ${horizontal ? 'flex flex-wrap' : ''}`}
-        style={{
-          height: tray_height,
-          width: tray_width,
-        }}
-      >
-        {cards.map((item: Card) => {
-          return (
-            <li
-              className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
-              draggable={true}
-              id={`${item.id}`}
-              key={item.id}
-              onDragStart={(event) => {
-                const data = {
-                  card_id: event.currentTarget.id,
-                  tray_id: id,
-                };
-                event.dataTransfer.setData('data', JSON.stringify(data));
-              }}
-              style={{
-                height: size,
-                width: size,
-              }}
-            >
-              {item.label}({item.ticks_remaining})
-            </li>
-          );
-        })}
-        {num_placeholders > 0 &&
-          new Array(num_placeholders).map((x, index) => {
-            return (
-              <li
-                className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
-                key={index}
-                style={{
-                  height: size,
-                  width: size,
-                }}
-              ></li>
-            );
-          })}
-      </ul>
+      <TrayHeader tray={tray} />
+      <TrayList
+        cards={cards}
+        horizontal={horizontal}
+        max_cards={max_cards}
+        tray={tray}
+      />
     </div>
   );
 }

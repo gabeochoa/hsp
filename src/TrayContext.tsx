@@ -1,22 +1,24 @@
 import { createContext, useCallback, useEffect, useRef, useState } from 'react';
-import { Card, TrayType } from './Types.tsx';
+import { TCard, TrayType } from './Types.tsx';
 
 interface ITrayContext {
   moveCard: (
     tray_one: ITray['id'],
     tray_two: ITray['id'],
-    card_id: Card['id'],
+    card_id: TCard['id'],
   ) => void;
   trays: ITray[];
 }
 
 export const TrayContext = createContext<ITrayContext>({
+  medicine: 0,
   moveCard: () => {},
   trays: [],
 });
 
 export function TrayContextProvider({ children }) {
   const nextID = useRef(0);
+  const [medicine, setMedicine] = useState<number>(5);
   const [trays, setTrays] = useState<ITray[]>([
     {
       id: 0,
@@ -75,7 +77,7 @@ export function TrayContextProvider({ children }) {
 
   const make_card = useCallback(() => {
     nextID.current += 1;
-    return new Card(nextID.current);
+    return new TCard(nextID.current);
   }, [nextID]);
 
   const tick_doctor = useCallback((tray: ITray) => {
@@ -139,6 +141,7 @@ export function TrayContextProvider({ children }) {
   return (
     <TrayContext.Provider
       value={{
+        medicine,
         moveCard,
         trays,
       }}

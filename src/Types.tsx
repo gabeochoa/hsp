@@ -4,7 +4,7 @@ export enum TrayType {
 }
 
 export interface ITray {
-  cards: Card[];
+  cards: TCard[];
   extra: {
     energy?: number | null;
   };
@@ -28,7 +28,7 @@ function get_random_affliction(): IAffliction {
   };
 }
 
-export class Card {
+export class TCard {
   id: number;
   label: string;
   ticks_remaining: number;
