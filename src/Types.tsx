@@ -31,13 +31,11 @@ function get_random_affliction(): IAffliction {
 export class TCard {
   id: number;
   label: string;
-  ticks_remaining: number;
   issue: IAffliction;
 
   constructor(id: number) {
     this.id = id;
     this.label = get_random_name() + id;
     this.issue = get_random_affliction();
-    this.ticks_remaining = this.issue.ticks_needed;
   }
 }

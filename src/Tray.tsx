@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { TrayContext } from './TrayContext.tsx';
 import { TrayType } from './Types.tsx';
 
-const CARD_SIZE = 100;
+const CARD_SIZE = 200;
 
 function CardPlaceholder() {
   return (
@@ -17,6 +17,49 @@ function CardPlaceholder() {
 }
 
 function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
+  const CardInner = () => {
+    return (
+      <div
+        className="flex flex-col"
+        style={{
+          height: CARD_SIZE,
+          width: CARD_SIZE,
+        }}
+      >
+        <div className="flex">
+          <h2 className="py-1 text-lg font-medium leading-6 text-gray-900">
+            {item.label}
+          </h2>
+          <img
+            alt="photo of patient"
+            className="h-8 w-8 rounded-full p-1"
+            src="https://fakeimg.pl/100x100"
+          />
+        </div>
+        <div className="mt-2 w-full">
+          <dl className="grid grid-cols-1 gap-y-4">
+            <div>
+              <dt className="text-xs font-medium text-gray-500">
+                Work Needed:
+              </dt>
+              <dd className="mt-1 text-xs text-gray-900">
+                {item.issue.ticks_needed}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">
+                Medicine Needed:
+              </dt>
+              <dd className="mt-1 text-xs text-gray-900">
+                {item.issue.medicine_needed}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <li
       className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
@@ -34,7 +77,7 @@ function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
         width: CARD_SIZE,
       }}
     >
-      {item.label}({item.ticks_remaining})
+      <CardInner />
     </li>
   );
 }

@@ -98,8 +98,8 @@ export function TrayContextProvider({ children }) {
     if (!firstCard) {
       return;
     }
-    if (firstCard.ticks_remaining > 0) {
-      firstCard.ticks_remaining -= 1;
+    if (firstCard.issue.ticks_needed > 0) {
+      firstCard.issue.ticks_needed -= 1;
     } else {
       tray.cards = tray.cards.filter((x) => x.id != firstCard.id);
     }
