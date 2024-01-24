@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { TrayContext } from './TrayContext.tsx';
 import { TrayType } from './Types.tsx';
 
-const CARD_SIZE = 200;
+const CARD_SIZE = 150;
 
 function CardPlaceholder() {
   return (

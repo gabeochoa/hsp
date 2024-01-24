@@ -6,7 +6,7 @@ function NewArrivals() {
   const { trays } = useContext(TrayContext);
 
   return (
-    <div className="break-after-column">
+    <div className="w-full">
       {trays.map((tray: ITray, index: number) => {
         if (index != 0) {
           return null;
@@ -29,7 +29,7 @@ function Doctors() {
   const { trays } = useContext(TrayContext);
 
   return (
-    <div className="">
+    <div className="w-full">
       {trays.map((tray: ITray, index: number) => {
         if (index == 0) {
           return null;
@@ -58,12 +58,16 @@ function Supplies() {
 
 function Main() {
   return (
-    <div className="mx-auto my-8 mt-10 w-8/12 rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
+    <div className="mx-auto h-dvh w-10/12 overflow-scroll rounded border border-gray-200 p-4 dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
       <h1 className="mb-4 text-4xl">Welcome</h1>
-      <div className="columns-2 gap-8">
-        <Supplies />
-        <NewArrivals />
-        <Doctors />
+      <Supplies />
+      <div className="grid grid-cols-3 gap-x-4">
+        <div>
+          <NewArrivals />
+        </div>
+        <div>
+          <Doctors />
+        </div>
       </div>
     </div>
   );
