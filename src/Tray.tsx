@@ -4,23 +4,22 @@ import { TrayType } from './Types.tsx';
 
 const CARD_SIZE = 100;
 
-function CardWrapper({ children }) {
+function CardPlaceholder() {
   return (
-    <div
+    <li
       className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
       style={{
         height: CARD_SIZE,
         width: CARD_SIZE,
       }}
-    >
-      {children}
-    </div>
+    ></li>
   );
 }
 
 function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
   return (
-    <CardWrapper
+    <li
+      className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
       draggable={true}
       id={`${item.id}`}
       onDragStart={(event) => {
@@ -30,9 +29,13 @@ function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
         };
         event.dataTransfer.setData('data', JSON.stringify(data));
       }}
+      style={{
+        height: CARD_SIZE,
+        width: CARD_SIZE,
+      }}
     >
       {item.label}({item.ticks_remaining})
-    </CardWrapper>
+    </li>
   );
 }
 
@@ -82,19 +85,11 @@ function TrayList({
       }}
     >
       {cards.map((item: TCard) => {
-        return (
-          <li key={item.id}>
-            <Card item={item} tray_id={tray.id} />
-          </li>
-        );
+        return <Card item={item} key={item.id} tray_id={tray.id} />;
       })}
       {num_placeholders > 0 &&
         new Array(num_placeholders).map((x, index) => {
-          return (
-            <li key={index}>
-              <CardWrapper />
-            </li>
-          );
+          return <CardPlaceholder key={index} />;
         })}
     </ul>
   );
