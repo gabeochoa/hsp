@@ -50,10 +50,9 @@ function TrayExtra({ tray }: { tray: ITray }) {
 }
 
 function TrayHeader({ tray }: { tray: ITray }) {
-  const { name } = tray;
   return (
     <div className="mb-2 text-xl font-bold">
-      {name}
+      {tray.label}
       <TrayExtra tray={tray} />
     </div>
   );
