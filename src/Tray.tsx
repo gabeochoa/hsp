@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { TrayContext } from './TrayContext.tsx';
-import { Entity, HasAffliction, HasName, ITray, TrayType } from './Types.tsx';
+import { Entity, HasAffliction, HasName, IsDoctor, IsTray } from './Types.tsx';
 
 const CARD_SIZE = 150;
 
@@ -88,23 +88,18 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
   );
 }
 
-function TrayExtra({ tray }: { tray: ITray }) {
-  let extra_component = null;
-  switch (tray.type) {
-    case TrayType.Hold:
-      extra_component = <div />;
-      break;
-    case TrayType.Doctor:
-      extra_component = <div>Energy: {tray.extra.energy}</div>;
-      break;
+function TrayExtra({ tray }: { tray: Entity }) {
+  if (tray.has('IsDoctor')) {
+    const isdoc: IsDoctor = tray.get<IsDoctor>('IsDoctor');
+    return <div>Energy: {isdoc.energy}</div>;
   }
-  return extra_component;
+  return <div />;
 }
 
-function TrayHeader({ tray }: { tray: ITray }) {
+function TrayHeader({ tray }: { tray: Entity }) {
   return (
     <div className="mb-2 text-xl font-bold">
-      {tray.label}
+      {tray.get<IsTray>('IsTray').label}
       <TrayExtra tray={tray} />
     </div>
   );
@@ -119,7 +114,7 @@ function TrayList({
   cards: Entity[];
   horizontal: boolean;
   max_cards: number;
-  tray: ITray;
+  tray: Entity;
 }) {
   const tray_height = CARD_SIZE * 1.1 * (!horizontal ? max_cards : 1);
   const tray_width = CARD_SIZE * 1.1 * (horizontal ? max_cards : 1);
@@ -153,9 +148,7 @@ export function Tray({
   cards: Entity[];
   horizontal: boolean;
   max_cards: number;
-  name: string;
-  tray: ITray;
-  type: ITray['type'];
+  tray: Entity;
 }) {
   const { moveCard } = useContext(TrayContext);
 

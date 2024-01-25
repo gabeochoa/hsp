@@ -1,19 +1,20 @@
 import { useContext } from 'react';
 import { Tray } from './Tray.tsx';
 import { TrayContext, TrayContextProvider } from './TrayContext.tsx';
+import { Entity, IsTray } from './Types.tsx';
 
 function NewArrivals() {
   const { trays } = useContext(TrayContext);
 
   return (
     <div className="w-full">
-      {trays.map((tray: ITray, index: number) => {
+      {trays.map((tray: Entity, index: number) => {
         if (index != 0) {
           return null;
         }
         return (
           <Tray
-            cards={tray.cards}
+            cards={tray.get<IsTray>('IsTray').cards}
             horizontal={false}
             key={tray.id}
             max_cards={5}
@@ -30,13 +31,13 @@ function Doctors() {
 
   return (
     <div className="w-full">
-      {trays.map((tray: ITray, index: number) => {
+      {trays.map((tray: Entity, index: number) => {
         if (index == 0) {
           return null;
         }
         return (
           <Tray
-            cards={tray.cards}
+            cards={tray.get<IsTray>('IsTray').cards}
             horizontal={true}
             key={tray.id}
             max_cards={3}

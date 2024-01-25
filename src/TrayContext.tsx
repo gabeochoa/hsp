@@ -2,19 +2,21 @@ import { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Entity,
   HasAffliction,
-  ITray,
+  IsDoctor,
+  IsTray,
   make_card_entity,
-  TCard,
-  TrayType,
+  make_doctor,
+  make_new_arrivals,
 } from './Types.tsx';
 
 interface ITrayContext {
+  medicine: number;
   moveCard: (
-    tray_one: ITray['id'],
-    tray_two: ITray['id'],
-    card_id: TCard['id'],
+    tray_one: Entity['id'],
+    tray_two: Entity['id'],
+    card_id: Entity['id'],
   ) => void;
-  trays: ITray[];
+  trays: Entity[];
 }
 
 export const TrayContext = createContext<ITrayContext>({
@@ -25,56 +27,45 @@ export const TrayContext = createContext<ITrayContext>({
 
 export function TrayContextProvider({ children }) {
   const nextID = useRef(0);
+
+  const make_card = useCallback((): Entity => {
+    nextID.current += 1;
+    return make_card_entity(nextID.current);
+  }, [nextID]);
+
   const [medicine, setMedicine] = useState<number>(5);
-  const [trays, setTrays] = useState<ITray[]>([
-    {
-      id: 0,
-      label: 'new arrivals',
-      // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [],
-      extra: {},
-      type: TrayType.Hold,
-    },
-    {
-      id: 1,
-      label: 'doctor1',
-      // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [],
-      extra: {
-        energy: 100,
-      },
-      type: TrayType.Doctor,
-    },
-    {
-      id: 2,
-      label: 'doctor2',
-      // eslint-disable-next-line sort-keys-fix/sort-keys-fix
-      cards: [],
-      extra: {
-        energy: 100,
-      },
-      type: TrayType.Doctor,
-    },
+  const [trays, setTrays] = useState<Entity[]>([
+    make_new_arrivals(0),
+    make_doctor(0),
+    make_doctor(1),
   ]);
 
   const moveCard = useCallback(
     (from_tray: number, to_tray: number, card_id: number) => {
       setTrays((prevTrays) => {
+        console.log(`Moving card ${card_id} From ${from_tray} to ${to_tray}`);
         const newTrays = [...prevTrays];
         const fromTray = prevTrays.find((tray) => tray.id === from_tray);
         const toTray = prevTrays.find((tray) => tray.id === to_tray);
-        if (fromTray && toTray) {
-          const cardToMove = fromTray.cards.find((card) => card.id === card_id);
-          if (cardToMove) {
-            // Remove the card from the from tray
-            fromTray.cards = fromTray.cards.filter(
-              (card) => card.id !== card_id,
-            );
-            // Add the card to the to tray
-            toTray.cards.push(cardToMove);
-          } else {
-            console.log('didnt find card');
-          }
+        if (!fromTray || !toTray) {
+          console.error(
+            'Moving card between trays where one or both dont exist',
+          );
+          return prevTrays;
+        }
+        const isTrayFrom: IsTray = fromTray.get<IsTray>('IsTray');
+        const isTrayTo: IsTray = toTray.get<IsTray>('IsTray');
+
+        const cardToMove = isTrayFrom.cards.find((card) => card.id === card_id);
+        if (cardToMove) {
+          // Remove the card from the from tray
+          isTrayFrom.cards = isTrayFrom.cards.filter(
+            (card) => card.id !== card_id,
+          );
+          // Add the card to the to tray
+          isTrayTo.cards.push(cardToMove);
+        } else {
+          console.log('didnt find card');
         }
         return newTrays;
       });
@@ -82,12 +73,7 @@ export function TrayContextProvider({ children }) {
     [],
   );
 
-  const make_card = useCallback((): Entity => {
-    nextID.current += 1;
-    return make_card_entity(nextID.current);
-  }, [nextID]);
-
-  const tick_doctor = useCallback((tray: ITray) => {
+  const tick_doctor = useCallback((tray: IsTray, doctor: IsDoctor) => {
     /*
 
       Doctor shouldnt start unless
@@ -107,16 +93,12 @@ export function TrayContextProvider({ children }) {
 
      */
 
-    const extra = tray.extra;
-    if (extra.energy == null || extra.energy == undefined) {
-      return;
-    }
     if (tray.cards.length == 0) {
-      extra.energy = Math.min(100, extra.energy + 1);
+      doctor.energy = Math.min(100, doctor.energy + 1);
       return;
     }
-    extra.energy = Math.max(0, extra.energy - 1);
-    if (extra.energy == 0) {
+    doctor.energy = Math.max(0, doctor.energy - 1);
+    if (doctor.energy == 0) {
       return;
     }
 
@@ -136,7 +118,7 @@ export function TrayContextProvider({ children }) {
   }, []);
 
   const tick_hold = useCallback(
-    (tray: ITray) => {
+    (tray: IsTray) => {
       if (tray.cards.length > 3) {
         return;
       }
@@ -149,14 +131,15 @@ export function TrayContextProvider({ children }) {
     // console.log('tick', Date.now());
     setTrays((prevTrays) => {
       const newTrays = [...prevTrays];
-      newTrays.forEach((tray) => {
-        switch (tray.type) {
-          case TrayType.Doctor:
-            tick_doctor(tray);
-            break;
-          case TrayType.Hold:
-            tick_hold(tray);
-            return;
+      newTrays.forEach((trayEnt: Entity) => {
+        if (trayEnt.has('IsDoctor')) {
+          tick_doctor(
+            trayEnt.get<IsTray>('IsTray'),
+            trayEnt.get<IsDoctor>('IsDoctor'),
+          );
+        }
+        if (trayEnt.has('IsNewArrivals')) {
+          tick_hold(trayEnt.get<IsTray>('IsTray'));
         }
       });
       return newTrays;

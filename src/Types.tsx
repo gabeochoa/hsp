@@ -1,18 +1,3 @@
-export enum TrayType {
-  Hold,
-  Doctor,
-}
-
-export interface ITray {
-  cards: Entity[];
-  extra: {
-    energy?: number | null;
-  };
-  id: number;
-  label: string;
-  type: TrayType;
-}
-
 export interface IAffliction {
   medicine_needed: number;
   ticks_needed: number;
@@ -52,7 +37,41 @@ export class HasAffliction implements Component {
   }
 }
 
-type OneOfComponent = HasName | HasAffliction;
+export class IsTray implements Component {
+  name: string;
+  cards: Entity[];
+  label: string;
+
+  constructor(label: string) {
+    this.name = 'IsTray';
+    this.cards = [];
+    this.label = label;
+  }
+}
+
+export class IsDoctor implements Component {
+  name: string;
+  energy: number;
+
+  constructor() {
+    this.name = 'IsDoctor';
+    this.energy = 100;
+  }
+}
+
+export class IsNewArrivals implements Component {
+  name: string;
+  constructor() {
+    this.name = 'IsNewArrivals';
+  }
+}
+
+type OneOfComponent =
+  | HasName
+  | HasAffliction //
+  | IsDoctor
+  | IsTray
+  | IsNewArrivals;
 
 export class Entity {
   name: string;
@@ -94,9 +113,12 @@ export class Entity {
 }
 
 const entities: Entity[] = [];
+function uid(): number {
+  return Math.round(Date.now() + Math.random() * 100);
+}
 
 export function make_card_entity(id: number) {
-  const entity = new Entity(id, 'card');
+  const entity = new Entity(uid(), 'card');
 
   entity.add<HasName>(new HasName());
   entity.add<HasAffliction>(new HasAffliction());
@@ -105,14 +127,18 @@ export function make_card_entity(id: number) {
   return entity;
 }
 
-export class TCard {
-  id: number;
-  label: string;
-  issue: IAffliction;
+export function make_new_arrivals(id: number) {
+  const entity = new Entity(uid(), 'tray');
+  entity.add<IsTray>(new IsTray('new_arrivals'));
+  entity.add<IsNewArrivals>(new IsNewArrivals());
+  entities.push(entity);
+  return entity;
+}
 
-  constructor(id: number) {
-    this.id = id;
-    this.label = get_random_name() + id;
-    this.issue = get_random_affliction();
-  }
+export function make_doctor(id: number) {
+  const entity = new Entity(uid(), 'doctor');
+  entity.add<IsTray>(new IsTray(`doctor${id}`));
+  entity.add<IsDoctor>(new IsDoctor());
+  entities.push(entity);
+  return entity;
 }
