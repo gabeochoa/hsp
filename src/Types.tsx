@@ -143,3 +143,38 @@ export function make_doctor(id: number) {
   entities.push(entity);
   return entity;
 }
+
+export function call_if_has_requires(
+  value: string,
+  entity: Entity,
+  cb: (arg0: Entity) => void,
+) {
+  if (entity.is_missing(value)) {
+    return;
+  }
+  cb(entity);
+}
+
+export function call_if_has_all_requires(
+  value: string[],
+  entity: Entity,
+  cb: (arg0: Entity) => void,
+) {
+  if (value.length == 0) {
+    return;
+  }
+  const missing_first = entity.is_missing(value[0]);
+  if (missing_first) {
+    // doesnt have req
+    // dont call the function
+    return;
+  }
+
+  // if this was the only req, we are good
+  if (value.length == 1) {
+    cb(entity);
+    return;
+  }
+  // otherwise check the rest
+  return call_if_has_all_requires(value.splice(1), entity, cb);
+}

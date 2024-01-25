@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import {
+  call_if_has_all_requires,
   Entity,
   HasAffliction,
   IsDoctor,
@@ -17,6 +18,27 @@ interface ITrayContext {
     card_id: Entity['id'],
   ) => void;
   trays: Entity[];
+}
+
+function regen_if_doctor_and_empty(entity: Entity) {
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+  const isdoctor: IsDoctor = entity.get<IsDoctor>('IsDoctor');
+  if (istray.cards.length != 0) {
+    return;
+  }
+  // TODO add max
+  if (isdoctor.energy >= 100) {
+    return;
+  }
+  isdoctor.energy++;
+}
+
+function system(entity: Entity) {
+  call_if_has_all_requires(
+    ['IsDoctor', 'IsTray'],
+    entity,
+    regen_if_doctor_and_empty,
+  );
 }
 
 export const TrayContext = createContext<ITrayContext>({
@@ -96,7 +118,6 @@ export function TrayContextProvider({ children }) {
      */
 
     if (tray.cards.length == 0) {
-      doctor.energy = Math.min(100, doctor.energy + 1);
       return;
     }
     doctor.energy = Math.max(0, doctor.energy - 1);
@@ -134,6 +155,7 @@ export function TrayContextProvider({ children }) {
     setTrays((prevTrays) => {
       const newTrays = [...prevTrays];
       newTrays.forEach((trayEnt: Entity) => {
+        system(trayEnt);
         if (trayEnt.has('IsDoctor')) {
           tick_doctor(
             trayEnt.get<IsTray>('IsTray'),
