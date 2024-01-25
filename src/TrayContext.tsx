@@ -43,11 +43,12 @@ export function TrayContextProvider({ children }) {
   const moveCard = useCallback(
     (from_tray: number, to_tray: number, card_id: number) => {
       setTrays((prevTrays) => {
-        console.log(`Moving card ${card_id} From ${from_tray} to ${to_tray}`);
+        // console.log(`Moving card ${card_id} From ${from_tray} to ${to_tray}`);
         const newTrays = [...prevTrays];
         const fromTray = prevTrays.find((tray) => tray.id === from_tray);
         const toTray = prevTrays.find((tray) => tray.id === to_tray);
         if (!fromTray || !toTray) {
+          // eslint-disable-next-line no-console
           console.error(
             'Moving card between trays where one or both dont exist',
           );
@@ -65,7 +66,8 @@ export function TrayContextProvider({ children }) {
           // Add the card to the to tray
           isTrayTo.cards.push(cardToMove);
         } else {
-          console.log('didnt find card');
+          // eslint-disable-next-line no-console
+          console.warn('didnt find card');
         }
         return newTrays;
       });

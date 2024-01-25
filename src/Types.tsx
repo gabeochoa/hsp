@@ -98,6 +98,7 @@ export class Entity {
   }
   get<T extends OneOfComponent>(name: string): T {
     if (this.is_missing(name)) {
+      // eslint-disable-next-line no-console
       console.error(`This entity ${this.id} ${this.name} is missing ${name}`);
     }
     return this.components[name];
