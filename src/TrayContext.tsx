@@ -33,13 +33,69 @@ function regen_if_doctor_and_empty(entity: Entity) {
   isdoctor.energy++;
 }
 
-function system(entity: Entity) {
-  call_if_has_all_requires(
-    ['IsDoctor', 'IsTray'],
-    entity,
-    regen_if_doctor_and_empty,
-  );
+function doctor_working(entity: Entity) {
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+  const isdoctor: IsDoctor = entity.get<IsDoctor>('IsDoctor');
+  if (istray.cards.length == 0) {
+    return;
+  }
+  isdoctor.energy = Math.max(0, isdoctor.energy - 1);
+  if (isdoctor.energy == 0) {
+    return;
+  }
+
+  const firstCard = istray.cards[0];
+  if (!firstCard) {
+    return;
+  }
+  const hasAffliction: HasAffliction =
+    firstCard.get<HasAffliction>('HasAffliction');
+  const issue = hasAffliction.affliction;
+
+  if (issue.ticks_needed > 0) {
+    issue.ticks_needed -= 1;
+  } else {
+    istray.cards = istray.cards.filter((x) => x.id != firstCard.id);
+  }
 }
+
+/*
+
+      Doctor shouldnt start unless
+      - they have enough energy to finish
+      - have enough supplies (etc) 
+
+      Once they start
+      - lock the card
+      - take the supplies
+      - start counting down 
+
+      Once they finish 
+      - delete the card 
+
+      While doctor empty 
+      - regen the energy
+
+     */
+
+class System {
+  medicine: number;
+
+  constructor() {
+    this.medicine = 5;
+  }
+
+  update(entity: Entity) {
+    call_if_has_all_requires(
+      ['IsDoctor', 'IsTray'],
+      entity,
+      regen_if_doctor_and_empty,
+    );
+    call_if_has_all_requires(['IsDoctor', 'IsTray'], entity, doctor_working);
+  }
+}
+
+const system = new System();
 
 export const TrayContext = createContext<ITrayContext>({
   medicine: 0,
@@ -55,7 +111,6 @@ export function TrayContextProvider({ children }) {
     return make_card_entity(nextID.current);
   }, [nextID]);
 
-  const [medicine, setMedicine] = useState<number>(5);
   const [trays, setTrays] = useState<Entity[]>([
     make_new_arrivals(0),
     make_doctor(0),
@@ -97,49 +152,6 @@ export function TrayContextProvider({ children }) {
     [],
   );
 
-  const tick_doctor = useCallback((tray: IsTray, doctor: IsDoctor) => {
-    /*
-
-      Doctor shouldnt start unless
-      - they have enough energy to finish
-      - have enough supplies (etc) 
-
-      Once they start
-      - lock the card
-      - take the supplies
-      - start counting down 
-
-      Once they finish 
-      - delete the card 
-
-      While doctor empty 
-      - regen the energy
-
-     */
-
-    if (tray.cards.length == 0) {
-      return;
-    }
-    doctor.energy = Math.max(0, doctor.energy - 1);
-    if (doctor.energy == 0) {
-      return;
-    }
-
-    const firstCard = tray.cards[0];
-    if (!firstCard) {
-      return;
-    }
-    const hasAffliction: HasAffliction =
-      firstCard.get<HasAffliction>('HasAffliction');
-    const issue = hasAffliction.affliction;
-
-    if (issue.ticks_needed > 0) {
-      issue.ticks_needed -= 1;
-    } else {
-      tray.cards = tray.cards.filter((x) => x.id != firstCard.id);
-    }
-  }, []);
-
   const tick_hold = useCallback(
     (tray: IsTray) => {
       if (tray.cards.length > 3) {
@@ -155,20 +167,14 @@ export function TrayContextProvider({ children }) {
     setTrays((prevTrays) => {
       const newTrays = [...prevTrays];
       newTrays.forEach((trayEnt: Entity) => {
-        system(trayEnt);
-        if (trayEnt.has('IsDoctor')) {
-          tick_doctor(
-            trayEnt.get<IsTray>('IsTray'),
-            trayEnt.get<IsDoctor>('IsDoctor'),
-          );
-        }
+        system.update(trayEnt);
         if (trayEnt.has('IsNewArrivals')) {
           tick_hold(trayEnt.get<IsTray>('IsTray'));
         }
       });
       return newTrays;
     });
-  }, [tick_doctor, tick_hold]);
+  }, [tick_hold]);
 
   useEffect(() => {
     const interval = setInterval(() => tick(), 1000);
@@ -178,7 +184,7 @@ export function TrayContextProvider({ children }) {
   return (
     <TrayContext.Provider
       value={{
-        medicine,
+        medicine: system.medicine,
         moveCard,
         trays,
       }}
