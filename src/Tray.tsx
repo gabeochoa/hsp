@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { TrayContext } from './TrayContext.tsx';
-import { TrayType } from './Types.tsx';
+import { Entity, HasAffliction, HasName, ITray, TrayType } from './Types.tsx';
 
 const CARD_SIZE = 150;
 
@@ -16,7 +16,7 @@ function CardPlaceholder() {
   );
 }
 
-function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
+function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
   const CardInner = () => {
     return (
       <div
@@ -28,7 +28,7 @@ function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
       >
         <div className="flex">
           <h2 className="py-1 text-lg font-medium leading-6 text-gray-900">
-            {item.label}
+            {item.get<HasName>('HasName').patient_name}
           </h2>
           <img
             alt="photo of patient"
@@ -43,7 +43,10 @@ function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
                 Work Needed:
               </dt>
               <dd className="mt-1 text-xs text-gray-900">
-                {item.issue.ticks_needed}
+                {
+                  item.get<HasAffliction>('HasAffliction').affliction
+                    .ticks_needed
+                }
               </dd>
             </div>
             <div>
@@ -51,7 +54,10 @@ function Card({ item, tray_id }: { item: TCard; tray_id: number }) {
                 Medicine Needed:
               </dt>
               <dd className="mt-1 text-xs text-gray-900">
-                {item.issue.medicine_needed}
+                {
+                  item.get<HasAffliction>('HasAffliction').affliction
+                    .medicine_needed
+                }
               </dd>
             </div>
           </dl>
@@ -110,7 +116,7 @@ function TrayList({
   max_cards,
   tray,
 }: {
-  cards: Card[];
+  cards: Entity[];
   horizontal: boolean;
   max_cards: number;
   tray: ITray;
@@ -127,7 +133,7 @@ function TrayList({
         width: tray_width,
       }}
     >
-      {cards.map((item: TCard) => {
+      {cards.map((item: Entity) => {
         return <Card item={item} key={item.id} tray_id={tray.id} />;
       })}
       {num_placeholders > 0 &&
@@ -144,7 +150,7 @@ export function Tray({
   max_cards,
   tray,
 }: {
-  cards: Card[];
+  cards: Entity[];
   horizontal: boolean;
   max_cards: number;
   name: string;

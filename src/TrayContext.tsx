@@ -1,5 +1,12 @@
 import { createContext, useCallback, useEffect, useRef, useState } from 'react';
-import { TCard, TrayType } from './Types.tsx';
+import {
+  Entity,
+  HasAffliction,
+  ITray,
+  make_card_entity,
+  TCard,
+  TrayType,
+} from './Types.tsx';
 
 interface ITrayContext {
   moveCard: (
@@ -75,12 +82,31 @@ export function TrayContextProvider({ children }) {
     [],
   );
 
-  const make_card = useCallback(() => {
+  const make_card = useCallback((): Entity => {
     nextID.current += 1;
-    return new TCard(nextID.current);
+    return make_card_entity(nextID.current);
   }, [nextID]);
 
   const tick_doctor = useCallback((tray: ITray) => {
+    /*
+
+      Doctor shouldnt start unless
+      - they have enough energy to finish
+      - have enough supplies (etc) 
+
+      Once they start
+      - lock the card
+      - take the supplies
+      - start counting down 
+
+      Once they finish 
+      - delete the card 
+
+      While doctor empty 
+      - regen the energy
+
+     */
+
     const extra = tray.extra;
     if (extra.energy == null || extra.energy == undefined) {
       return;
@@ -98,8 +124,12 @@ export function TrayContextProvider({ children }) {
     if (!firstCard) {
       return;
     }
-    if (firstCard.issue.ticks_needed > 0) {
-      firstCard.issue.ticks_needed -= 1;
+    const hasAffliction: HasAffliction =
+      firstCard.get<HasAffliction>('HasAffliction');
+    const issue = hasAffliction.affliction;
+
+    if (issue.ticks_needed > 0) {
+      issue.ticks_needed -= 1;
     } else {
       tray.cards = tray.cards.filter((x) => x.id != firstCard.id);
     }
