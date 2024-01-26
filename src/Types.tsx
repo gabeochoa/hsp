@@ -9,7 +9,7 @@ function get_random_name() {
 function get_random_affliction(): IAffliction {
   return {
     medicine_needed: Math.round(1 * Math.random()),
-    ticks_needed: Math.round(100 * Math.random()),
+    ticks_needed: Math.round(50 * Math.random()),
   };
 }
 
@@ -83,7 +83,7 @@ export class IsNewArrivals implements Component {
   constructor() {
     this.name = 'IsNewArrivals';
 
-    this.spawn_cooldown_reset = 20;
+    this.spawn_cooldown_reset = 30;
     // starting at zero so you start with a single card
     this.spawn_cooldown = 0;
   }

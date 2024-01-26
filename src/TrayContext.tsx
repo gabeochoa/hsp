@@ -19,6 +19,7 @@ interface ITrayContext {
     tray_two: Entity['id'],
     card_id: Entity['id'],
   ) => void;
+  patients_healed: number;
   patients_lost: number;
   trays: Entity[];
 }
@@ -144,6 +145,22 @@ function cleanup_dead_patients(entity: Entity) {
   const lenAfter = istray.cards.length;
   system.patients_lost += len - lenAfter;
 }
+
+function cleanup_healed_patients(entity: Entity) {
+  // we require it to be a doctor below, because
+  // we dont want to hide the people who spawn with full health
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+
+  const len = istray.cards.length;
+  istray.cards = istray.cards.filter(
+    (x: Entity) =>
+      x.get<HasHealth>('HasHealth').health < 100 ||
+      x.get<HasAffliction>('HasAffliction').affliction.ticks_needed != 0,
+  );
+  const lenAfter = istray.cards.length;
+  system.patients_healed += len - lenAfter;
+}
+
 /*
 
       Doctor shouldnt start unless
@@ -160,10 +177,12 @@ function cleanup_dead_patients(entity: Entity) {
 class System {
   medicine: number;
   patients_lost: number;
+  patients_healed: number;
 
   constructor() {
     this.medicine = 500;
     this.patients_lost = 0;
+    this.patients_healed = 0;
   }
 
   update(entity: Entity) {
@@ -189,6 +208,11 @@ class System {
       heal_if_being_helped,
     );
     call_if_has_all_requires(['IsTray'], entity, cleanup_dead_patients);
+    call_if_has_all_requires(
+      ['IsDoctor', 'IsTray'],
+      entity,
+      cleanup_healed_patients,
+    );
   }
 }
 
@@ -197,6 +221,7 @@ const system = new System();
 export const TrayContext = createContext<ITrayContext>({
   medicine: 0,
   moveCard: () => {},
+  patients_healed: 0,
   patients_lost: 0,
   trays: [],
 });
@@ -268,6 +293,7 @@ export function TrayContextProvider({ children }) {
       value={{
         medicine: system.medicine,
         moveCard,
+        patients_healed: system.patients_healed,
         patients_lost: system.patients_lost,
         trays,
       }}
