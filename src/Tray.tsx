@@ -3,6 +3,7 @@ import { TrayContext } from './TrayContext.tsx';
 import {
   Entity,
   HasAffliction,
+  HasHealth,
   HasName,
   IsDoctor,
   IsNewArrivals,
@@ -227,22 +228,28 @@ export function Tray({
   max_cards: number;
   tray: Entity;
 }) {
-  const { moveCard } = useContext(TrayContext);
+  const { is_valid_move, moveCard } = useContext(TrayContext);
 
   return (
     <div
       className="mt-5 rounded-lg p-4 shadow-lg"
       onDragOver={(event) => {
         event.preventDefault();
+        // TODO show why its not valid
       }}
       onDrop={(event) => {
         event.preventDefault();
-        if (cards.length == max_cards) {
-          return;
-        }
 
         const data = JSON.parse(event.dataTransfer.getData('data'));
         const { card_id, tray_id } = data;
+        const is_valid = is_valid_move(
+          Number(tray_id),
+          Number(tray.id),
+          Number(card_id),
+        );
+        if (!is_valid) {
+          return;
+        }
         moveCard(Number(tray_id), Number(tray.id), Number(card_id));
       }}
     >

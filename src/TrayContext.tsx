@@ -9,10 +9,16 @@ import {
   IsTray,
   make_card_entity,
   make_doctor,
+  make_morgue,
   make_new_arrivals,
 } from './Types.tsx';
 
 interface ITrayContext {
+  is_valid_move: (
+    tray_one: Entity['id'],
+    tray_two: Entity['id'],
+    card_id: Entity['id'],
+  ) => boolean;
   medicine: number;
   moveCard: (
     tray_one: Entity['id'],
@@ -221,6 +227,7 @@ const system = new System();
 export const TrayContext = createContext<ITrayContext>({
   medicine: 0,
   moveCard: () => {},
+  is_valid_move: () => {},
   patients_healed: 0,
   patients_lost: 0,
   trays: [],
@@ -229,9 +236,45 @@ export const TrayContext = createContext<ITrayContext>({
 export function TrayContextProvider({ children }) {
   const [trays, setTrays] = useState<Entity[]>([
     make_new_arrivals(),
+    make_morgue(),
     make_doctor(),
     make_doctor(),
   ]);
+
+  const is_valid_move = useCallback(
+    (from_tray: number, to_tray: number, card_id: number) => {
+      const fromTray = trays.find((tray) => tray.id === from_tray);
+      const toTray = trays.find((tray) => tray.id === to_tray);
+
+      // valid trays
+      if (!fromTray || !toTray) {
+        return false;
+      }
+
+      const isTrayFrom: IsTray = fromTray.get<IsTray>('IsTray');
+      const isTrayTo: IsTray = toTray.get<IsTray>('IsTray');
+
+      const cardToMove = isTrayFrom.cards.find((card) => card.id === card_id);
+
+      // card exists
+      if (!cardToMove) {
+        return false;
+      }
+
+      // TODO move into IsTray
+      const max_cards = 5;
+
+      // do we have space ?
+      if (isTrayTo.cards.length >= max_cards) {
+        return false;
+      }
+
+      // TODO if toTray is a morgue, make sure the card is dead
+
+      return true;
+    },
+    [],
+  );
 
   const moveCard = useCallback(
     (from_tray: number, to_tray: number, card_id: number) => {
@@ -295,6 +338,7 @@ export function TrayContextProvider({ children }) {
         moveCard,
         patients_healed: system.patients_healed,
         patients_lost: system.patients_lost,
+        is_valid_move,
         trays,
       }}
     >

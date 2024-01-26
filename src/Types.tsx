@@ -40,7 +40,7 @@ export class HasHealth implements Component {
 export class HasAffliction implements Component {
   name: string;
   affliction: IAffliction;
-  doctor?: Entity = null;
+  doctor?: Entity | null = null;
 
   constructor() {
     this.name = 'HasAffliction';
@@ -74,6 +74,14 @@ export class IsDoctor implements Component {
   }
 }
 
+export class IsMorgue implements Component {
+  name: string;
+
+  constructor() {
+    this.name = 'IsMorgue';
+  }
+}
+
 export class IsNewArrivals implements Component {
   name: string;
 
@@ -95,6 +103,7 @@ type OneOfComponent =
   | HasHealth
   | IsDoctor
   | IsTray
+  | IsMorgue
   | IsNewArrivals;
 
 export class Entity {
@@ -165,6 +174,14 @@ export function make_doctor() {
   const entity = new Entity(uid(), 'doctor');
   entity.add<IsTray>(new IsTray(`doctor${entity.id}`));
   entity.add<IsDoctor>(new IsDoctor());
+  entities.push(entity);
+  return entity;
+}
+
+export function make_morgue() {
+  const entity = new Entity(uid(), 'morgue');
+  entity.add<IsTray>(new IsTray(`morgue${entity.id}`));
+  entity.add<IsMorgue>(new IsMorgue());
   entities.push(entity);
   return entity;
 }
