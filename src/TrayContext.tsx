@@ -146,12 +146,18 @@ function move_dead_patients(entity: Entity) {
   const istray: IsTray = entity.get<IsTray>('IsTray');
 
   const len = istray.cards.length;
+
   const dead = istray.cards.filter(
-    (x: Entity) => x.get<HasHealth>('HasHealth').health <= 0,
+    (x: Entity) =>
+      x.get<HasHealth>('HasHealth').health <= 0 && //
+      // we check for is dead so we only count
+      // the new ones
+      x.is_missing('IsDead'),
   );
   dead.forEach((x) =>
     x.is_missing('IsDead') ? x.add<IsDead>(new IsDead()) : 1,
   );
+
   istray.cards = istray.cards.filter(
     (x: Entity) => x.get<HasHealth>('HasHealth').health > 0,
   );
