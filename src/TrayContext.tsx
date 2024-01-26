@@ -4,6 +4,7 @@ import {
   Entity,
   HasAffliction,
   HasHealth,
+  IsDead,
   IsDoctor,
   IsNewArrivals,
   IsTray,
@@ -141,15 +142,48 @@ function heal_if_being_helped(entity: Entity) {
   hasHealth.health = Math.min(100, hasHealth.health + rate);
 }
 
-function cleanup_dead_patients(entity: Entity) {
+function move_dead_patients(entity: Entity) {
   const istray: IsTray = entity.get<IsTray>('IsTray');
 
   const len = istray.cards.length;
+  const dead = istray.cards.filter(
+    (x: Entity) => x.get<HasHealth>('HasHealth').health <= 0,
+  );
+  dead.forEach((x) =>
+    x.is_missing('IsDead') ? x.add<IsDead>(new IsDead()) : 1,
+  );
   istray.cards = istray.cards.filter(
     (x: Entity) => x.get<HasHealth>('HasHealth').health > 0,
   );
   const lenAfter = istray.cards.length;
+
+  istray.cards.push(...dead);
+
   system.patients_lost += len - lenAfter;
+}
+
+function cleanup_dead_patients(entity: Entity) {
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+
+  istray.cards = istray.cards.filter(
+    (x: Entity) =>
+      // this is here in case move validation
+      // doesnt work
+      x.is_missing('IsDead') ||
+      //
+      x.get<IsDead>('IsDead').burial_cooldown > 0,
+  );
+
+  if (istray.cards.length == 0) {
+    return;
+  }
+
+  const card = istray.cards[0];
+  if (card.is_missing('IsDead')) {
+    console.error('Patient in morgue is not dead?');
+    return;
+  }
+  card.get<IsDead>('IsDead').burial_cooldown--;
 }
 
 function cleanup_healed_patients(entity: Entity) {
@@ -166,19 +200,6 @@ function cleanup_healed_patients(entity: Entity) {
   const lenAfter = istray.cards.length;
   system.patients_healed += len - lenAfter;
 }
-
-/*
-
-      Doctor shouldnt start unless
-      - they have enough energy to finish
-      - have enough supplies (etc) 
-
-      Once they start
-      - lock the card
-      - take the supplies
-      - start counting down 
-
-     */
 
 class System {
   medicine: number;
@@ -213,7 +234,12 @@ class System {
       entity,
       heal_if_being_helped,
     );
-    call_if_has_all_requires(['IsTray'], entity, cleanup_dead_patients);
+    call_if_has_all_requires(
+      ['IsTray', 'IsMorgue'],
+      entity,
+      cleanup_dead_patients,
+    );
+    call_if_has_all_requires(['IsTray'], entity, move_dead_patients);
     call_if_has_all_requires(
       ['IsDoctor', 'IsTray'],
       entity,
@@ -225,9 +251,11 @@ class System {
 const system = new System();
 
 export const TrayContext = createContext<ITrayContext>({
+  is_valid_move: () => {
+    return true;
+  },
   medicine: 0,
   moveCard: () => {},
-  is_valid_move: () => {},
   patients_healed: 0,
   patients_lost: 0,
   trays: [],

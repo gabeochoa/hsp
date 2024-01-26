@@ -74,6 +74,19 @@ export class IsDoctor implements Component {
   }
 }
 
+export class IsDead implements Component {
+  name: string;
+
+  burial_cooldown: number;
+  burial_cooldown_reset: number;
+
+  constructor() {
+    this.name = 'IsDead';
+    this.burial_cooldown = 50;
+    this.burial_cooldown_reset = 50;
+  }
+}
+
 export class IsMorgue implements Component {
   name: string;
 
@@ -104,6 +117,7 @@ type OneOfComponent =
   | IsDoctor
   | IsTray
   | IsMorgue
+  | IsDead
   | IsNewArrivals;
 
 export class Entity {
