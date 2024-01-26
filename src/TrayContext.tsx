@@ -1,9 +1,11 @@
-import { createContext, useCallback, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useEffect, useState } from 'react';
 import {
   call_if_has_all_requires,
   Entity,
   HasAffliction,
+  HasHealth,
   IsDoctor,
+  IsNewArrivals,
   IsTray,
   make_card_entity,
   make_doctor,
@@ -17,6 +19,7 @@ interface ITrayContext {
     tray_two: Entity['id'],
     card_id: Entity['id'],
   ) => void;
+  patients_lost: number;
   trays: Entity[];
 }
 
@@ -65,12 +68,12 @@ function doctor_working(entity: Entity) {
   if (hasAffliction.locked()) {
     // someone is working on this card
 
-    if (hasAffliction.doctor.id == entity.id) {
+    if (hasAffliction.doctor?.id == entity.id) {
       // oh its us
     } else {
       // eslint-disable-next-line no-console
       console.error(
-        `Our (${entity.id} first card ${firstCard.id} is locked by ${hasAffliction.doctor.id}`,
+        `Our (${entity.id} first card ${firstCard.id} is locked by ${hasAffliction.doctor?.id}`,
       );
       return;
     }
@@ -92,14 +95,16 @@ function doctor_working(entity: Entity) {
 
 function spawn_new_cards(entity: Entity) {
   const istray: IsTray = entity.get<IsTray>('IsTray');
+  const isnewarrival: IsNewArrivals =
+    entity.get<IsNewArrivals>('IsNewArrivals');
   if (istray.cards.length > 3) {
     return;
   }
-  system.spawn_cooldown--;
-  if (system.spawn_cooldown > 0) {
+  isnewarrival.spawn_cooldown--;
+  if (isnewarrival.spawn_cooldown > 0) {
     return;
   }
-  system.spawn_cooldown = system.spawn_cooldown_reset;
+  isnewarrival.spawn_cooldown = isnewarrival.spawn_cooldown_reset;
   istray.cards.push(make_card_entity());
 }
 
@@ -156,15 +161,9 @@ class System {
   medicine: number;
   patients_lost: number;
 
-  spawn_cooldown: number;
-  spawn_cooldown_reset: number;
-
   constructor() {
     this.medicine = 500;
     this.patients_lost = 0;
-
-    this.spawn_cooldown_reset = 20;
-    this.spawn_cooldown = this.spawn_cooldown_reset;
   }
 
   update(entity: Entity) {
@@ -203,12 +202,10 @@ export const TrayContext = createContext<ITrayContext>({
 });
 
 export function TrayContextProvider({ children }) {
-  const nextID = useRef(0);
-
   const [trays, setTrays] = useState<Entity[]>([
-    make_new_arrivals(0),
-    make_doctor(0),
-    make_doctor(1),
+    make_new_arrivals(),
+    make_doctor(),
+    make_doctor(),
   ]);
 
   const moveCard = useCallback(

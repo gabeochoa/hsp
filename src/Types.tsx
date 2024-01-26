@@ -76,14 +76,22 @@ export class IsDoctor implements Component {
 
 export class IsNewArrivals implements Component {
   name: string;
+
+  spawn_cooldown: number;
+  spawn_cooldown_reset: number;
+
   constructor() {
     this.name = 'IsNewArrivals';
+
+    this.spawn_cooldown_reset = 20;
+    this.spawn_cooldown = this.spawn_cooldown_reset;
   }
 }
 
 type OneOfComponent =
   | HasName
   | HasAffliction //
+  | HasHealth
   | IsDoctor
   | IsTray
   | IsNewArrivals;

@@ -1,6 +1,13 @@
 import { useContext } from 'react';
 import { TrayContext } from './TrayContext.tsx';
-import { Entity, HasAffliction, HasName, IsDoctor, IsTray } from './Types.tsx';
+import {
+  Entity,
+  HasAffliction,
+  HasName,
+  IsDoctor,
+  IsNewArrivals,
+  IsTray,
+} from './Types.tsx';
 
 const CARD_SIZE = 150;
 
@@ -141,6 +148,10 @@ function TrayExtra({ tray }: { tray: Entity }) {
   if (tray.has('IsDoctor')) {
     const isdoc: IsDoctor = tray.get<IsDoctor>('IsDoctor');
     return <div>Energy: {isdoc.energy}</div>;
+  }
+  if (tray.has('IsNewArrivals')) {
+    const isnewarr: IsNewArrivals = tray.get<IsNewArrivals>('IsNewArrivals');
+    return <div>Next Spawn: {isnewarr.spawn_cooldown}</div>;
   }
   return <div />;
 }
