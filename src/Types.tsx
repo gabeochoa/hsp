@@ -9,7 +9,7 @@ function get_random_name() {
 function get_random_affliction(): IAffliction {
   return {
     medicine_needed: 0,
-    ticks_needed: 100,
+    ticks_needed: Math.round(100 * Math.random()),
   };
 }
 
@@ -30,10 +30,15 @@ export class HasName implements Component {
 export class HasAffliction implements Component {
   name: string;
   affliction: IAffliction;
+  doctor?: Entity = null;
 
   constructor() {
     this.name = 'HasAffliction';
     this.affliction = get_random_affliction();
+  }
+
+  locked(): boolean {
+    return this.doctor != null;
   }
 }
 
@@ -144,12 +149,11 @@ export function make_doctor() {
   return entity;
 }
 
-export function call_if_has_requires(
-  value: string,
+export function call_if_has_requires<T extends OneOfComponent>(
   entity: Entity,
   cb: (arg0: Entity) => void,
 ) {
-  if (entity.is_missing(value)) {
+  if (entity.is_missing(string(T))) {
     return;
   }
   cb(entity);

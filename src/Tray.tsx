@@ -65,11 +65,12 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
       </div>
     );
   };
+  const draggable = !item.get<HasAffliction>('HasAffliction').locked();
 
   return (
     <li
       className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
-      draggable={true}
+      draggable={draggable}
       id={`${item.id}`}
       onDragStart={(event) => {
         const data = {
@@ -84,6 +85,29 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
       }}
     >
       <CardInner />
+      {!draggable && (
+        <div
+          style={{
+            marginTop: -CARD_SIZE,
+            paddingRight: 75,
+          }}
+        >
+          <svg
+            className="h-24 w-24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      )}
     </li>
   );
 }

@@ -39,17 +39,46 @@ function doctor_working(entity: Entity) {
   if (istray.cards.length == 0) {
     return;
   }
-  isdoctor.energy = Math.max(0, isdoctor.energy - 1);
-  if (isdoctor.energy == 0) {
-    return;
-  }
 
   const firstCard = istray.cards[0];
   if (!firstCard) {
     return;
   }
+
   const hasAffliction: HasAffliction =
     firstCard.get<HasAffliction>('HasAffliction');
+
+  // TODO add some icon for this
+  if (hasAffliction.affliction.ticks_needed > isdoctor.energy) {
+    return;
+  }
+
+  if (hasAffliction.affliction.medicine_needed > system.medicine) {
+    return;
+  }
+
+  isdoctor.energy = Math.max(0, isdoctor.energy - 1);
+  if (isdoctor.energy == 0) {
+    return;
+  }
+
+  if (hasAffliction.locked()) {
+    // someone is working on this card
+
+    if (hasAffliction.doctor.id == entity.id) {
+      // oh its us
+    } else {
+      // eslint-disable-next-line no-console
+      console.error(
+        `Our (${entity.id} first card ${firstCard.id} is locked by ${hasAffliction.doctor.id}`,
+      );
+      return;
+    }
+  } else {
+    // if its not locked yet then lets lock it
+    hasAffliction.doctor = entity;
+  }
+
   const issue = hasAffliction.affliction;
 
   if (issue.ticks_needed > 0) {
@@ -77,12 +106,6 @@ function spawn_new_cards(entity: Entity) {
       - lock the card
       - take the supplies
       - start counting down 
-
-      Once they finish 
-      - delete the card 
-
-      While doctor empty 
-      - regen the energy
 
      */
 
