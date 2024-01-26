@@ -59,6 +59,14 @@ function doctor_working(entity: Entity) {
   }
 }
 
+function spawn_new_cards(entity: Entity) {
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+  if (istray.cards.length > 3) {
+    return;
+  }
+  istray.cards.push(make_card_entity());
+}
+
 /*
 
       Doctor shouldnt start unless
@@ -92,6 +100,11 @@ class System {
       regen_if_doctor_and_empty,
     );
     call_if_has_all_requires(['IsDoctor', 'IsTray'], entity, doctor_working);
+    call_if_has_all_requires(
+      ['IsNewArrivals', 'IsTray'],
+      entity,
+      spawn_new_cards,
+    );
   }
 }
 
@@ -105,11 +118,6 @@ export const TrayContext = createContext<ITrayContext>({
 
 export function TrayContextProvider({ children }) {
   const nextID = useRef(0);
-
-  const make_card = useCallback((): Entity => {
-    nextID.current += 1;
-    return make_card_entity(nextID.current);
-  }, [nextID]);
 
   const [trays, setTrays] = useState<Entity[]>([
     make_new_arrivals(0),
@@ -152,29 +160,16 @@ export function TrayContextProvider({ children }) {
     [],
   );
 
-  const tick_hold = useCallback(
-    (tray: IsTray) => {
-      if (tray.cards.length > 3) {
-        return;
-      }
-      tray.cards.push(make_card());
-    },
-    [make_card],
-  );
-
   const tick = useCallback(() => {
     // console.log('tick', Date.now());
     setTrays((prevTrays) => {
       const newTrays = [...prevTrays];
       newTrays.forEach((trayEnt: Entity) => {
         system.update(trayEnt);
-        if (trayEnt.has('IsNewArrivals')) {
-          tick_hold(trayEnt.get<IsTray>('IsTray'));
-        }
       });
       return newTrays;
     });
-  }, [tick_hold]);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => tick(), 1000);

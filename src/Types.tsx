@@ -118,7 +118,7 @@ function uid(): number {
   return Math.round(Date.now() + Math.random() * 100);
 }
 
-export function make_card_entity(id: number) {
+export function make_card_entity() {
   const entity = new Entity(uid(), 'card');
 
   entity.add<HasName>(new HasName());
@@ -128,7 +128,7 @@ export function make_card_entity(id: number) {
   return entity;
 }
 
-export function make_new_arrivals(id: number) {
+export function make_new_arrivals() {
   const entity = new Entity(uid(), 'tray');
   entity.add<IsTray>(new IsTray('new_arrivals'));
   entity.add<IsNewArrivals>(new IsNewArrivals());
@@ -136,9 +136,9 @@ export function make_new_arrivals(id: number) {
   return entity;
 }
 
-export function make_doctor(id: number) {
+export function make_doctor() {
   const entity = new Entity(uid(), 'doctor');
-  entity.add<IsTray>(new IsTray(`doctor${id}`));
+  entity.add<IsTray>(new IsTray(`doctor${entity.id}`));
   entity.add<IsDoctor>(new IsDoctor());
   entities.push(entity);
   return entity;
