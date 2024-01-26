@@ -145,9 +145,26 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
 }
 
 function TrayExtra({ tray }: { tray: Entity }) {
+  const istray: IsTray = tray.get<IsTray>('IsTray');
+
   if (tray.has('IsDoctor')) {
     const isdoc: IsDoctor = tray.get<IsDoctor>('IsDoctor');
-    return <div>Energy: {isdoc.energy}</div>;
+
+    const planned_energy = istray.cards.reduce((prev: number, card: Entity) => {
+      return (
+        prev + card.get<HasAffliction>('HasAffliction').affliction.ticks_needed
+      );
+    }, 0);
+
+    return (
+      <div>
+        <p>Energy: {isdoc.energy}</p>
+        <p>Planned: {planned_energy}</p>
+        {planned_energy - isdoc.energy > 0 && (
+          <p>Deficit: {isdoc.energy - planned_energy}</p>
+        )}
+      </div>
+    );
   }
   if (tray.has('IsNewArrivals')) {
     const isnewarr: IsNewArrivals = tray.get<IsNewArrivals>('IsNewArrivals');
