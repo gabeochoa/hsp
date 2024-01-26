@@ -149,16 +149,6 @@ export function make_doctor() {
   return entity;
 }
 
-export function call_if_has_requires<T extends OneOfComponent>(
-  entity: Entity,
-  cb: (arg0: Entity) => void,
-) {
-  if (entity.is_missing(string(T))) {
-    return;
-  }
-  cb(entity);
-}
-
 export function call_if_has_all_requires(
   value: string[],
   entity: Entity,
