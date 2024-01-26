@@ -75,9 +75,26 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
   };
   const draggable = !item.get<HasAffliction>('HasAffliction').locked();
 
+  const background_color = () => {
+    const health = item.get<HasHealth>('HasHealth').health;
+    if (health < 20) {
+      return 'bg-rose-500';
+    }
+    if (health < 30) {
+      return 'bg-amber-500';
+    }
+    if (health < 40) {
+      return 'bg-amber-200';
+    }
+    if (health < 50) {
+      return 'bg-amber-100';
+    }
+    return 'bg-white';
+  };
+
   return (
     <li
-      className="mb-2 cursor-move border border-indigo-300 bg-white p-4"
+      className={`mb-2 cursor-move border border-indigo-300 ${background_color()} p-4`}
       draggable={draggable}
       id={`${item.id}`}
       onDragStart={(event) => {
