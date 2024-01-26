@@ -77,6 +77,8 @@ function doctor_working(entity: Entity) {
   } else {
     // if its not locked yet then lets lock it
     hasAffliction.doctor = entity;
+    system.medicine -= hasAffliction.affliction.medicine_needed;
+    hasAffliction.affliction.medicine_needed = 0;
   }
 
   const issue = hasAffliction.affliction;
@@ -96,6 +98,42 @@ function spawn_new_cards(entity: Entity) {
   istray.cards.push(make_card_entity());
 }
 
+function take_damage_if_waiting(entity: Entity) {
+  const hasHealth: HasHealth = entity.get<HasHealth>('HasHealth');
+  const hasAffliction: HasAffliction =
+    entity.get<HasAffliction>('HasAffliction');
+
+  if (hasAffliction.locked()) {
+    return;
+  }
+  // TODO figure out
+  const rate = 1;
+  hasHealth.health = Math.max(0, hasHealth.health - rate);
+}
+
+function heal_if_being_helped(entity: Entity) {
+  const hasHealth: HasHealth = entity.get<HasHealth>('HasHealth');
+  const hasAffliction: HasAffliction =
+    entity.get<HasAffliction>('HasAffliction');
+  if (!hasAffliction.locked()) {
+    return;
+  }
+
+  // TODO figure out
+  const rate = 1;
+  hasHealth.health = Math.min(100, hasHealth.health + rate);
+}
+
+function cleanup_dead_patients(entity: Entity) {
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+
+  const len = istray.cards.length;
+  istray.cards = istray.cards.filter(
+    (x: Entity) => x.get<HasHealth>('HasHealth').health > 0,
+  );
+  const lenAfter = istray.cards.length;
+  system.patients_lost += len - lenAfter;
+}
 /*
 
       Doctor shouldnt start unless
@@ -111,9 +149,11 @@ function spawn_new_cards(entity: Entity) {
 
 class System {
   medicine: number;
+  patients_lost: number;
 
   constructor() {
-    this.medicine = 5;
+    this.medicine = 500;
+    this.patients_lost = 0;
   }
 
   update(entity: Entity) {
@@ -128,6 +168,17 @@ class System {
       entity,
       spawn_new_cards,
     );
+    call_if_has_all_requires(
+      ['HasHealth', 'HasAffliction'],
+      entity,
+      take_damage_if_waiting,
+    );
+    call_if_has_all_requires(
+      ['HasHealth', 'HasAffliction'],
+      entity,
+      heal_if_being_helped,
+    );
+    call_if_has_all_requires(['IsTray'], entity, cleanup_dead_patients);
   }
 }
 
@@ -136,6 +187,7 @@ const system = new System();
 export const TrayContext = createContext<ITrayContext>({
   medicine: 0,
   moveCard: () => {},
+  patients_lost: 0,
   trays: [],
 });
 
@@ -189,6 +241,10 @@ export function TrayContextProvider({ children }) {
       const newTrays = [...prevTrays];
       newTrays.forEach((trayEnt: Entity) => {
         system.update(trayEnt);
+
+        trayEnt.get<IsTray>('IsTray').cards.forEach((card: Entity) => {
+          system.update(card);
+        });
       });
       return newTrays;
     });
@@ -204,6 +260,7 @@ export function TrayContextProvider({ children }) {
       value={{
         medicine: system.medicine,
         moveCard,
+        patients_lost: system.patients_lost,
         trays,
       }}
     >

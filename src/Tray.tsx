@@ -39,26 +39,34 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
         <div className="mt-2 w-full">
           <dl className="grid grid-cols-1 gap-y-4">
             <div>
-              <dt className="text-xs font-medium text-gray-500">
-                Work Needed:
-              </dt>
-              <dd className="mt-1 text-xs text-gray-900">
-                {
-                  item.get<HasAffliction>('HasAffliction').affliction
-                    .ticks_needed
-                }
-              </dd>
+              <p className="text-xs font-medium text-gray-500">
+                Work Needed:{' '}
+                <span className="text-gray-950">
+                  {
+                    item.get<HasAffliction>('HasAffliction').affliction
+                      .ticks_needed
+                  }
+                </span>
+              </p>
             </div>
             <div>
-              <dt className="text-xs font-medium text-gray-500">
-                Medicine Needed:
-              </dt>
-              <dd className="mt-1 text-xs text-gray-900">
-                {
-                  item.get<HasAffliction>('HasAffliction').affliction
-                    .medicine_needed
-                }
-              </dd>
+              <p className="text-xs font-medium text-gray-500">
+                Medicine Required:{' '}
+                <span className="text-gray-950">
+                  {
+                    item.get<HasAffliction>('HasAffliction').affliction
+                      .medicine_needed
+                  }
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500">
+                Health Remaining:{' '}
+                <span className="text-gray-950">
+                  {item.get<HasHealth>('HasHealth').health}
+                </span>
+              </p>
             </div>
           </dl>
         </div>

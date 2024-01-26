@@ -8,7 +8,7 @@ function get_random_name() {
 }
 function get_random_affliction(): IAffliction {
   return {
-    medicine_needed: 0,
+    medicine_needed: Math.round(1 * Math.random()),
     ticks_needed: Math.round(100 * Math.random()),
   };
 }
@@ -24,6 +24,16 @@ export class HasName implements Component {
   constructor() {
     this.name = 'HasName';
     this.patient_name = get_random_name();
+  }
+}
+
+export class HasHealth implements Component {
+  name: string;
+  health: number;
+
+  constructor() {
+    this.name = 'HasHealth';
+    this.health = 100;
   }
 }
 
@@ -128,6 +138,7 @@ export function make_card_entity() {
 
   entity.add<HasName>(new HasName());
   entity.add<HasAffliction>(new HasAffliction());
+  entity.add<HasHealth>(new HasHealth());
 
   entities.push(entity);
   return entity;
