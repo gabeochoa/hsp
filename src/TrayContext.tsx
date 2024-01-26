@@ -95,6 +95,11 @@ function spawn_new_cards(entity: Entity) {
   if (istray.cards.length > 3) {
     return;
   }
+  system.spawn_cooldown--;
+  if (system.spawn_cooldown > 0) {
+    return;
+  }
+  system.spawn_cooldown = system.spawn_cooldown_reset;
   istray.cards.push(make_card_entity());
 }
 
@@ -151,23 +156,29 @@ class System {
   medicine: number;
   patients_lost: number;
 
+  spawn_cooldown: number;
+  spawn_cooldown_reset: number;
+
   constructor() {
     this.medicine = 500;
     this.patients_lost = 0;
+
+    this.spawn_cooldown_reset = 20;
+    this.spawn_cooldown = this.spawn_cooldown_reset;
   }
 
   update(entity: Entity) {
+    call_if_has_all_requires(
+      ['IsNewArrivals', 'IsTray'],
+      entity,
+      spawn_new_cards,
+    );
     call_if_has_all_requires(
       ['IsDoctor', 'IsTray'],
       entity,
       regen_if_doctor_and_empty,
     );
     call_if_has_all_requires(['IsDoctor', 'IsTray'], entity, doctor_working);
-    call_if_has_all_requires(
-      ['IsNewArrivals', 'IsTray'],
-      entity,
-      spawn_new_cards,
-    );
     call_if_has_all_requires(
       ['HasHealth', 'HasAffliction'],
       entity,
