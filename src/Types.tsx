@@ -84,7 +84,8 @@ export class IsNewArrivals implements Component {
     this.name = 'IsNewArrivals';
 
     this.spawn_cooldown_reset = 20;
-    this.spawn_cooldown = this.spawn_cooldown_reset;
+    // starting at zero so you start with a single card
+    this.spawn_cooldown = 0;
   }
 }
 
