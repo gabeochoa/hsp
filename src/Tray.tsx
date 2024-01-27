@@ -5,6 +5,7 @@ import {
   HasAffliction,
   HasHealth,
   HasName,
+  IsDead,
   IsDoctor,
   IsNewArrivals,
   IsTray,
@@ -77,6 +78,68 @@ function CardPlaceholder() {
 }
 
 function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
+  const locked = item.get<HasAffliction>('HasAffliction').locked();
+  const dead = item.has('IsDead');
+  const draggable = !locked;
+
+  const AfflictionInfo = () => {
+    return (
+      <div className="mt-2 w-full">
+        <dl className="grid grid-cols-1 gap-y-4">
+          <div>
+            <p className="text-xs font-medium text-gray-500">
+              Work Needed:{' '}
+              <span className="text-gray-950">
+                {
+                  item.get<HasAffliction>('HasAffliction').affliction
+                    .ticks_needed
+                }
+              </span>
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500">
+              Medicine Required:{' '}
+              <span className="text-gray-950">
+                {
+                  item.get<HasAffliction>('HasAffliction').affliction
+                    .medicine_needed
+                }
+              </span>
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500">
+              Health Remaining:{' '}
+              <span className="text-gray-950">
+                {item.get<HasHealth>('HasHealth').health}
+              </span>
+            </p>
+          </div>
+        </dl>
+      </div>
+    );
+  };
+
+  const BurialInfo = () => {
+    return (
+      <div className="mt-2 w-full">
+        <dl className="grid grid-cols-1 gap-y-4">
+          <div>
+            <br />
+            <br />
+            <p className="text-xs font-medium text-gray-500">
+              Time Remaining:{' '}
+              <span className="text-gray-950">
+                {item.get<IsDead>('IsDead').burial_cooldown}
+              </span>
+            </p>
+          </div>
+        </dl>
+      </div>
+    );
+  };
+
   const CardInner = () => {
     return (
       <div
@@ -96,40 +159,8 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
             src="https://fakeimg.pl/100x100"
           />
         </div>
-        <div className="mt-2 w-full">
-          <dl className="grid grid-cols-1 gap-y-4">
-            <div>
-              <p className="text-xs font-medium text-gray-500">
-                Work Needed:{' '}
-                <span className="text-gray-950">
-                  {
-                    item.get<HasAffliction>('HasAffliction').affliction
-                      .ticks_needed
-                  }
-                </span>
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500">
-                Medicine Required:{' '}
-                <span className="text-gray-950">
-                  {
-                    item.get<HasAffliction>('HasAffliction').affliction
-                      .medicine_needed
-                  }
-                </span>
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500">
-                Health Remaining:{' '}
-                <span className="text-gray-950">
-                  {item.get<HasHealth>('HasHealth').health}
-                </span>
-              </p>
-            </div>
-          </dl>
-        </div>
+        {!dead && <AfflictionInfo />}
+        {dead && <BurialInfo />}
       </div>
     );
   };
@@ -150,10 +181,6 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
     }
     return 'bg-white';
   };
-
-  const locked = item.get<HasAffliction>('HasAffliction').locked();
-  const dead = item.has('IsDead');
-  const draggable = !locked;
 
   return (
     <li
