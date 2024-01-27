@@ -143,11 +143,8 @@ function heal_if_being_helped(entity: Entity) {
   hasHealth.health = Math.min(100, hasHealth.health + rate);
 }
 
-function move_dead_patients(entity: Entity) {
+function mark_dead_patients(entity: Entity) {
   const istray: IsTray = entity.get<IsTray>('IsTray');
-
-  const len = istray.cards.length;
-
   const dead = istray.cards.filter(
     (x: Entity) =>
       x.get<HasHealth>('HasHealth').health <= 0 && //
@@ -158,15 +155,14 @@ function move_dead_patients(entity: Entity) {
   dead.forEach((x) =>
     x.is_missing('IsDead') ? x.add<IsDead>(new IsDead()) : 1,
   );
+  system.patients_lost += dead.length;
+}
 
-  istray.cards = istray.cards.filter(
-    (x: Entity) => x.get<HasHealth>('HasHealth').health > 0,
-  );
-  const lenAfter = istray.cards.length;
-
+function move_dead_patients(entity: Entity) {
+  const istray: IsTray = entity.get<IsTray>('IsTray');
+  const dead = istray.cards.filter((x: Entity) => x.has('IsDead'));
+  istray.cards = istray.cards.filter((x: Entity) => x.is_missing('IsDead'));
   istray.cards.push(...dead);
-
-  system.patients_lost += len - lenAfter;
 }
 
 function cleanup_dead_patients(entity: Entity) {
@@ -187,6 +183,7 @@ function cleanup_dead_patients(entity: Entity) {
 
   const card = istray.cards[0];
   if (card.is_missing('IsDead')) {
+    // eslint-disable-next-line no-console
     console.error('Patient in morgue is not dead?');
     return;
   }
@@ -241,12 +238,13 @@ class System {
       entity,
       heal_if_being_helped,
     );
+    call_if_has_all_requires(['IsTray'], entity, mark_dead_patients);
+    call_if_has_all_requires(['IsTray'], entity, move_dead_patients);
     call_if_has_all_requires(
       ['IsTray', 'IsMorgue'],
       entity,
       cleanup_dead_patients,
     );
-    call_if_has_all_requires(['IsTray'], entity, move_dead_patients);
     call_if_has_all_requires(
       ['IsDoctor', 'IsTray'],
       entity,
