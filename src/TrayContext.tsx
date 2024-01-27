@@ -7,7 +7,6 @@ import {
   HasHealth,
   IsDead,
   IsDoctor,
-  IsMorgue,
   IsNewArrivals,
   IsTray,
   make_card_entity,
@@ -311,8 +310,14 @@ export function TrayContextProvider({
 
       // If its a morgue and the card isnt dead
       // not allowed
-      if (toTray.get<IsMorgue>('IsMorgue')) {
+      if (toTray.has('IsMorgue')) {
         if (cardToMove.is_missing('IsDead')) {
+          return false;
+        }
+      } else {
+        // if its not the mogue
+        // no dead cards
+        if (cardToMove.has('IsDead')) {
           return false;
         }
       }
