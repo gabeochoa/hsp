@@ -107,11 +107,16 @@ function spawn_new_cards(entity: Entity) {
   const istray: IsTray = entity.get<IsTray>('IsTray');
   const isnewarrival: IsNewArrivals =
     entity.get<IsNewArrivals>('IsNewArrivals');
-  if (istray.cards.length > constants.max_cards_new_arrivals) {
+  isnewarrival.spawn_cooldown = Math.max(0, isnewarrival.spawn_cooldown - 1);
+  if (isnewarrival.spawn_cooldown > 0) {
     return;
   }
-  isnewarrival.spawn_cooldown--;
-  if (isnewarrival.spawn_cooldown > 0) {
+  // This check is after the cooldown check
+  // so that as soon as the spot opens up you get a new card
+  //
+  // This might cause issues where you want to put something back
+  // but someone has already taken it
+  if (istray.cards.length > constants.max_cards_new_arrivals) {
     return;
   }
   isnewarrival.spawn_cooldown = isnewarrival.spawn_cooldown_reset;
