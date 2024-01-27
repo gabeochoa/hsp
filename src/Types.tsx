@@ -1,49 +1,19 @@
+import { constants, variables } from './Constants';
+
 export interface IAffliction {
   medicine_needed: number;
   ticks_needed: number;
 }
 
 function get_random_name() {
-  // These are just the top names from 1923-now in the us
-
-  const names = [
-    'James',
-    'Mary',
-    'Robert',
-    'Patricia',
-    'John',
-    'Jennifer',
-    'Michael',
-    'Linda',
-    'David',
-    'Elizabeth',
-    'William',
-    'Barbara',
-    'Richard',
-    'Susan',
-    'Joseph',
-    'Jessica',
-    'Thomas',
-    'Sarah',
-    'Christopher',
-    'Karen',
-    'Charles',
-    'Lisa',
-    'Daniel',
-    'Nancy',
-    'Matthew',
-    'Betty',
-    'Anthony',
-    'Sandra',
-    'Mark',
-    'Margaret',
-  ];
-  return names[Math.floor(Math.random() * names.length)] + ' ';
+  return (
+    constants.names[Math.floor(Math.random() * constants.names.length)] + ' '
+  );
 }
 function get_random_affliction(): IAffliction {
   return {
-    medicine_needed: Math.round(1 * Math.random()),
-    ticks_needed: Math.round(50 * Math.random()),
+    medicine_needed: Math.round(variables.max_medicine_needed * Math.random()),
+    ticks_needed: Math.round(variables.max_ticks_needed * Math.random()),
   };
 }
 
@@ -67,7 +37,7 @@ export class HasHealth implements Component {
 
   constructor() {
     this.name = 'HasHealth';
-    this.health = 100;
+    this.health = constants.max_health;
   }
 }
 
@@ -104,7 +74,7 @@ export class IsDoctor implements Component {
 
   constructor() {
     this.name = 'IsDoctor';
-    this.energy = 100;
+    this.energy = constants.max_energy;
   }
 }
 
@@ -116,8 +86,8 @@ export class IsDead implements Component {
 
   constructor() {
     this.name = 'IsDead';
-    this.burial_cooldown = 50;
-    this.burial_cooldown_reset = 50;
+    this.burial_cooldown = variables.burial_time;
+    this.burial_cooldown_reset = variables.burial_time;
   }
 }
 
@@ -138,7 +108,7 @@ export class IsNewArrivals implements Component {
   constructor() {
     this.name = 'IsNewArrivals';
 
-    this.spawn_cooldown_reset = 30;
+    this.spawn_cooldown_reset = variables.new_arrival_spawn_rate;
     // starting at zero so you start with a single card
     this.spawn_cooldown = 0;
   }

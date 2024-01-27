@@ -1,4 +1,5 @@
 import { createContext, useCallback, useEffect, useState } from 'react';
+import { constants } from './Constants.tsx';
 import {
   call_if_has_all_requires,
   Entity,
@@ -39,7 +40,7 @@ function regen_if_doctor_and_empty(entity: Entity) {
     return;
   }
   // TODO add max
-  if (isdoctor.energy >= 100) {
+  if (isdoctor.energy >= constants.max_energy) {
     return;
   }
   isdoctor.energy++;
@@ -106,7 +107,7 @@ function spawn_new_cards(entity: Entity) {
   const istray: IsTray = entity.get<IsTray>('IsTray');
   const isnewarrival: IsNewArrivals =
     entity.get<IsNewArrivals>('IsNewArrivals');
-  if (istray.cards.length > 3) {
+  if (istray.cards.length > constants.max_cards_new_arrivals) {
     return;
   }
   isnewarrival.spawn_cooldown--;
@@ -140,7 +141,7 @@ function heal_if_being_helped(entity: Entity) {
 
   // TODO figure out
   const rate = 1;
-  hasHealth.health = Math.min(100, hasHealth.health + rate);
+  hasHealth.health = Math.min(constants.max_health, hasHealth.health + rate);
 }
 
 function mark_dead_patients(entity: Entity) {
@@ -198,7 +199,7 @@ function cleanup_healed_patients(entity: Entity) {
   const len = istray.cards.length;
   istray.cards = istray.cards.filter(
     (x: Entity) =>
-      x.get<HasHealth>('HasHealth').health < 100 ||
+      x.get<HasHealth>('HasHealth').health < constants.max_health ||
       x.get<HasAffliction>('HasAffliction').affliction.ticks_needed != 0,
   );
   const lenAfter = istray.cards.length;
@@ -211,7 +212,7 @@ class System {
   patients_healed: number;
 
   constructor() {
-    this.medicine = 500;
+    this.medicine = constants.starting_medicine;
     this.patients_lost = 0;
     this.patients_healed = 0;
   }
@@ -259,7 +260,7 @@ export const TrayContext = createContext<ITrayContext>({
   is_valid_move: () => {
     return true;
   },
-  medicine: 0,
+  medicine: constants.starting_medicine,
   moveCard: () => {},
   patients_healed: 0,
   patients_lost: 0,
@@ -298,11 +299,8 @@ export function TrayContextProvider({
         return false;
       }
 
-      // TODO move into IsTray
-      const max_cards = 5;
-
       // do we have space ?
-      if (isTrayTo.cards.length >= max_cards) {
+      if (isTrayTo.cards.length >= constants.max_cards) {
         return false;
       }
 
