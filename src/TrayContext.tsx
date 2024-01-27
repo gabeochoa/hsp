@@ -266,7 +266,11 @@ export const TrayContext = createContext<ITrayContext>({
   trays: [],
 });
 
-export function TrayContextProvider({ children }) {
+export function TrayContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [trays, setTrays] = useState<Entity[]>([
     make_new_arrivals(),
     make_morgue(),

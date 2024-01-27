@@ -136,6 +136,7 @@ export class Entity {
 
   add<T extends OneOfComponent>(comp: T) {
     if (comp.name in this.components) {
+      // eslint-disable-next-line no-console
       console.error(
         `This entity ${this.id} ${this.name} already has component ${comp.name}`,
       );
