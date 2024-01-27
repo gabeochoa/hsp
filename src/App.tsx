@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { ThemeContext, ThemeContextProvider } from './ThemeContext';
 import { Tray } from './Tray.tsx';
 import { TrayContext, TrayContextProvider } from './TrayContext.tsx';
 import { Entity, IsTray } from './Types.tsx';
@@ -83,10 +84,41 @@ function Main() {
     </div>
   );
 }
+
+const DarkModeToggle = () => {
+  const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  const dark_class =
+    'text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700';
+  const light_class =
+    'text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700';
+
+  return (
+    <button
+      className={isDarkMode ? dark_class : light_class}
+      onClick={toggleDarkMode}
+    >
+      {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+    </button>
+  );
+};
+
 export default function App() {
   return (
-    <TrayContextProvider>
-      <Main />
-    </TrayContextProvider>
+    <ThemeContextProvider>
+      <TrayContextProvider>
+        <DarkModeToggle />
+        <Main />
+      </TrayContextProvider>
+    </ThemeContextProvider>
   );
 }
