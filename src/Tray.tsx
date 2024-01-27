@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { BasicText } from './Components.tsx';
 import { TrayContext } from './TrayContext.tsx';
 import {
   Entity,
@@ -220,10 +221,12 @@ function TrayExtra({ tray }: { tray: Entity }) {
 
     return (
       <div>
-        <p>Energy: {isdoc.energy}</p>
-        <p>Planned: {planned_energy}</p>
+        <BasicText>Energy: {isdoc.energy}</BasicText>
+        <BasicText>Planned: {planned_energy}</BasicText>
         {planned_energy - isdoc.energy > 0 && (
-          <p>Deficit: {isdoc.energy - planned_energy}</p>
+          <BasicText>
+            Deficit: Deficit: {isdoc.energy - planned_energy}
+          </BasicText>
         )}
       </div>
     );
@@ -237,7 +240,7 @@ function TrayExtra({ tray }: { tray: Entity }) {
 
 function TrayHeader({ tray }: { tray: Entity }) {
   return (
-    <div className="mb-2 text-xl font-bold">
+    <div className="mb-2 text-xl font-bold dark:text-white">
       {tray.get<IsTray>('IsTray').label}
       <TrayExtra tray={tray} />
     </div>

@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { Header, TextXL } from './Components.tsx';
 import { ThemeContext, ThemeContextProvider } from './ThemeContext';
 import { Tray } from './Tray.tsx';
 import { TrayContext, TrayContextProvider } from './TrayContext.tsx';
@@ -55,15 +56,9 @@ function Supplies() {
 
   return (
     <div>
-      <div className="mb-2 text-xl font-bold">
-        Medicine Supplies: {medicine}
-      </div>
-      <div className="mb-2 text-xl font-bold">
-        Lost Patients: {patients_lost}
-      </div>
-      <div className="mb-2 text-xl font-bold">
-        Patients Healed: {patients_healed}
-      </div>
+      <TextXL content={<>Medicine Supplies: {medicine}</>} />
+      <TextXL content={<>Lost Patients: {patients_lost}</>} />
+      <TextXL content={<>Patients Healed: {patients_healed}</>} />
     </div>
   );
 }
@@ -71,7 +66,8 @@ function Supplies() {
 function Main() {
   return (
     <div className="mx-auto h-dvh w-10/12 overflow-scroll rounded border border-gray-200 p-4 dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
-      <h1 className="mb-4 text-4xl">Welcome</h1>
+      <DarkModeToggle />
+      <Header text={'welcome'} />
       <Supplies />
       <div className="grid grid-cols-3 gap-x-4">
         <div>
@@ -116,7 +112,6 @@ export default function App() {
   return (
     <ThemeContextProvider>
       <TrayContextProvider>
-        <DarkModeToggle />
         <Main />
       </TrayContextProvider>
     </ThemeContextProvider>
