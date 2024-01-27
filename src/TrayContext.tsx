@@ -6,6 +6,7 @@ import {
   HasHealth,
   IsDead,
   IsDoctor,
+  IsMorgue,
   IsNewArrivals,
   IsTray,
   make_card_entity,
@@ -303,11 +304,17 @@ export function TrayContextProvider({ children }) {
         return false;
       }
 
-      // TODO if toTray is a morgue, make sure the card is dead
+      // If its a morgue and the card isnt dead
+      // not allowed
+      if (toTray.get<IsMorgue>('IsMorgue')) {
+        if (cardToMove.is_missing('IsDead')) {
+          return false;
+        }
+      }
 
       return true;
     },
-    [],
+    [trays],
   );
 
   const moveCard = useCallback(
@@ -368,11 +375,11 @@ export function TrayContextProvider({ children }) {
   return (
     <TrayContext.Provider
       value={{
+        is_valid_move,
         medicine: system.medicine,
         moveCard,
         patients_healed: system.patients_healed,
         patients_lost: system.patients_lost,
-        is_valid_move,
         trays,
       }}
     >
