@@ -4,7 +4,41 @@ export interface IAffliction {
 }
 
 function get_random_name() {
-  return 'John ';
+  // These are just the top names from 1923-now in the us
+
+  const names = [
+    'James',
+    'Mary',
+    'Robert',
+    'Patricia',
+    'John',
+    'Jennifer',
+    'Michael',
+    'Linda',
+    'David',
+    'Elizabeth',
+    'William',
+    'Barbara',
+    'Richard',
+    'Susan',
+    'Joseph',
+    'Jessica',
+    'Thomas',
+    'Sarah',
+    'Christopher',
+    'Karen',
+    'Charles',
+    'Lisa',
+    'Daniel',
+    'Nancy',
+    'Matthew',
+    'Betty',
+    'Anthony',
+    'Sandra',
+    'Mark',
+    'Margaret',
+  ];
+  return names[Math.floor(Math.random() * names.length)] + ' ';
 }
 function get_random_affliction(): IAffliction {
   return {
