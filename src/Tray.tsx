@@ -2,9 +2,11 @@ import { useContext } from 'react';
 import { BasicText } from './Components.tsx';
 import { TrayContext } from './TrayContext.tsx';
 import {
+  cost_of_procedure,
   Entity,
   HasAffliction,
   HasHealth,
+  HasMoney,
   HasName,
   IsDead,
   IsDoctor,
@@ -85,8 +87,27 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
 
   const AfflictionInfo = () => {
     return (
-      <div className="mt-2 w-full">
-        <dl className="grid grid-cols-1 gap-y-4">
+      <div className="w-full">
+        <dl className="grid grid-cols-1 gap-y-1">
+          <div>
+            <p className="text-xs font-medium text-gray-500">
+              Wallet{' '}
+              <span className="text-gray-950">
+                ${item.get<HasMoney>('HasMoney').money}
+              </span>
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500">
+              Procedure Cost{' '}
+              <span className="text-gray-950">
+                $
+                {cost_of_procedure(
+                  item.get<HasAffliction>('HasAffliction').affliction,
+                )}
+              </span>
+            </p>
+          </div>
           <div>
             <p className="text-xs font-medium text-gray-500">
               Work Needed:{' '}
@@ -144,21 +165,21 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
   const CardInner = () => {
     return (
       <div
-        className="flex flex-col"
+        className=""
         style={{
           height: CARD_SIZE,
           width: CARD_SIZE,
         }}
       >
-        <div className="flex">
-          <h2 className="py-1 text-lg font-medium leading-6 text-gray-900">
-            {item.get<HasName>('HasName').patient_name}
-          </h2>
+        <div className="flex items-center">
           <img
             alt="photo of patient"
             className="h-8 w-8 rounded-full p-1"
             src="https://fakeimg.pl/100x100"
           />
+          <h2 className="text-lg font-medium leading-6 text-gray-900">
+            {item.get<HasName>('HasName').patient_name}
+          </h2>
         </div>
         {!dead && <AfflictionInfo />}
         {dead && <BurialInfo />}
@@ -185,7 +206,7 @@ function Card({ item, tray_id }: { item: Entity; tray_id: number }) {
 
   return (
     <li
-      className={`mb-2 cursor-move border border-indigo-300 ${background_color()} p-4`}
+      className={`mb-2 cursor-move border border-indigo-300 ${background_color()} rounded-lg p-4 shadow-lg`}
       draggable={draggable}
       id={`${item.id}`}
       onDragStart={(event) => {

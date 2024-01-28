@@ -5,6 +5,13 @@ export interface IAffliction {
   ticks_needed: number;
 }
 
+export function cost_of_procedure(aff: IAffliction) {
+  return (
+    variables.doctor_hourly_wage * aff.ticks_needed +
+    variables.medicine_cost_to_consumer * aff.medicine_needed
+  );
+}
+
 function get_random_name() {
   return (
     constants.names[Math.floor(Math.random() * constants.names.length)] + ' '
@@ -38,6 +45,20 @@ export class HasHealth implements Component {
   constructor() {
     this.name = 'HasHealth';
     this.health = constants.max_health;
+  }
+}
+
+export class HasMoney implements Component {
+  name: string;
+  money: number;
+
+  constructor() {
+    this.name = 'HasMoney';
+    this.money = Math.floor(
+      Math.random() * variables.max_money +
+        Math.random() * variables.max_medicine_needed +
+        Math.random() * variables.max_ticks_needed,
+    );
   }
 }
 
@@ -176,6 +197,7 @@ export function make_card_entity() {
   entity.add<HasName>(new HasName());
   entity.add<HasAffliction>(new HasAffliction());
   entity.add<HasHealth>(new HasHealth());
+  entity.add<HasMoney>(new HasMoney());
 
   entities.push(entity);
   return entity;

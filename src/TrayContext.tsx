@@ -211,11 +211,13 @@ function cleanup_healed_patients(entity: Entity) {
 }
 
 class System {
+  money: number;
   medicine: number;
   patients_lost: number;
   patients_healed: number;
 
   constructor() {
+    this.money = 0;
     this.medicine = constants.starting_medicine;
     this.patients_lost = 0;
     this.patients_healed = 0;
