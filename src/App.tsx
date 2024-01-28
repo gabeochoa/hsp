@@ -56,9 +56,9 @@ function Supplies() {
 
   return (
     <div>
-      <TextXL content={<>Medicine Supplies: {medicine}</>} />
-      <TextXL content={<>Lost Patients: {patients_lost}</>} />
-      <TextXL content={<>Patients Healed: {patients_healed}</>} />
+      <TextXL>Medicine Supplies: {medicine}</TextXL>
+      <TextXL>Lost Patients: {patients_lost}</TextXL>
+      <TextXL>Patients Healed: {patients_healed}</TextXL>
     </div>
   );
 }
@@ -67,7 +67,7 @@ function Main() {
   return (
     <div className="mx-auto h-dvh w-10/12 overflow-scroll rounded border border-gray-200 p-4 dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
       <DarkModeToggle />
-      <Header text={'welcome'} />
+      <Header>Welcome</Header>
       <Supplies />
       <div className="grid grid-cols-3 gap-x-4">
         <div>
