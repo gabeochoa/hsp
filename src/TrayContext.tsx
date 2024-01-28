@@ -2,9 +2,11 @@ import { createContext, useCallback, useEffect, useState } from 'react';
 import { constants } from './Constants.tsx';
 import {
   call_if_has_all_requires,
+  cost_of_procedure,
   Entity,
   HasAffliction,
   HasHealth,
+  HasMoney,
   IsDead,
   IsDoctor,
   IsNewArrivals,
@@ -92,6 +94,12 @@ function doctor_working(entity: Entity) {
     hasAffliction.doctor = entity;
     system.medicine -= hasAffliction.affliction.medicine_needed;
     hasAffliction.affliction.medicine_needed = 0;
+
+    // pay us
+    // TODO also multiply by doctor
+    const cost = cost_of_procedure(hasAffliction.affliction);
+    system.money += cost;
+    firstCard.get<HasMoney>('HasMoney').money -= cost;
   }
 
   const issue = hasAffliction.affliction;
