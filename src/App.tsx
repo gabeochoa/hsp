@@ -52,10 +52,12 @@ function Doctors() {
 }
 
 function Supplies() {
-  const { medicine, patients_healed, patients_lost } = useContext(TrayContext);
+  const { medicine, money, patients_healed, patients_lost } =
+    useContext(TrayContext);
 
   return (
     <div>
+      <TextXL>Cash Reserves: ${money}</TextXL>
       <TextXL>Medicine Supplies: {medicine}</TextXL>
       <TextXL>Lost Patients: {patients_lost}</TextXL>
       <TextXL>Patients Healed: {patients_healed}</TextXL>

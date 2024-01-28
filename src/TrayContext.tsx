@@ -22,6 +22,7 @@ interface ITrayContext {
     card_id: Entity['id'],
   ) => boolean;
   medicine: number;
+  money: 0;
   moveCard: (
     tray_one: Entity['id'],
     tray_two: Entity['id'],
@@ -267,6 +268,7 @@ export const TrayContext = createContext<ITrayContext>({
     return true;
   },
   medicine: constants.starting_medicine,
+  money: 0,
   moveCard: () => {},
   patients_healed: 0,
   patients_lost: 0,
@@ -389,6 +391,7 @@ export function TrayContextProvider({
       value={{
         is_valid_move,
         medicine: system.medicine,
+        money: system.money,
         moveCard,
         patients_healed: system.patients_healed,
         patients_lost: system.patients_lost,
