@@ -1,13 +1,15 @@
-export function Header({ text }) {
-  return <h1 className="mb-4 text-4xl text-black dark:text-white">{text}</h1>;
-}
-
-export function TextXL({ content }) {
+export function Header({ children }) {
   return (
-    <div className="mb-2 text-xl font-bold dark:text-white">{content}</div>
+    <h1 className="mb-4 text-4xl text-black dark:text-white">{children}</h1>
   );
 }
 
-export function BasicText({ content }) {
-  return <p className={'dark:text-white'}>{content}</p>;
+export function TextXL({ children }) {
+  return (
+    <div className="mb-2 text-xl font-bold dark:text-white">{children}</div>
+  );
+}
+
+export function BasicText({ children }) {
+  return <p className={'dark:text-white'}>{children}</p>;
 }
