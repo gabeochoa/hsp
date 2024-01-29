@@ -49,6 +49,7 @@ class Variables {
   //
   doctor_hourly_wage: number = 2;
   medicine_cost_to_consumer: number = 5;
+  medicine_cost_to_player: number = 5;
 
   // Ticks
   burial_time: number = 50;

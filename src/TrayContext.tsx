@@ -1,5 +1,5 @@
 import { createContext, useCallback, useEffect, useState } from 'react';
-import { constants } from './Constants.tsx';
+import { constants, variables } from './Constants.tsx';
 import { system } from './System.tsx';
 import {
   Entity,
@@ -24,6 +24,7 @@ interface ITrayContext {
   ) => void;
   patients_healed: number;
   patients_lost: number;
+  purchase_medicine: () => void;
   trays: Entity[];
 }
 
@@ -36,6 +37,7 @@ export const TrayContext = createContext<ITrayContext>({
   moveCard: () => {},
   patients_healed: 0,
   patients_lost: 0,
+  purchase_medicine: () => {},
   trays: [],
 });
 
@@ -160,6 +162,13 @@ export function TrayContextProvider({
         moveCard,
         patients_healed: system.patients_healed,
         patients_lost: system.patients_lost,
+        purchase_medicine: () => {
+          if (system.money < variables.medicine_cost_to_player) {
+            return;
+          }
+          system.money -= variables.medicine_cost_to_player;
+          system.medicine++;
+        },
         trays,
       }}
     >

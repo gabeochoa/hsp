@@ -1,6 +1,7 @@
 import { useContext } from 'react';
-import { Header, TextXL } from './Components.tsx';
-import { ThemeContext, ThemeContextProvider } from './ThemeContext';
+import { Button, Header, TextXL } from './Components.tsx';
+import { variables } from './Constants.tsx';
+import { ThemeContext, ThemeContextProvider } from './ThemeContext.tsx';
 import { Tray } from './Tray.tsx';
 import { TrayContext, TrayContextProvider } from './TrayContext.tsx';
 import { Entity, IsTray } from './Types.tsx';
@@ -52,13 +53,23 @@ function Doctors() {
 }
 
 function Supplies() {
-  const { medicine, money, patients_healed, patients_lost } =
+  const { medicine, money, patients_healed, patients_lost, purchase_medicine } =
     useContext(TrayContext);
 
   return (
     <div>
       <TextXL>Cash Reserves: ${money}</TextXL>
-      <TextXL>Medicine Supplies: {medicine}</TextXL>
+      <TextXL>
+        Medicine Supplies: {medicine}
+        <Button
+          className="ml-4"
+          onClick={() => {
+            purchase_medicine();
+          }}
+        >
+          Buy (-${variables.medicine_cost_to_player})
+        </Button>
+      </TextXL>
       <TextXL>Lost Patients: {patients_lost}</TextXL>
       <TextXL>Patients Healed: {patients_healed}</TextXL>
     </div>
