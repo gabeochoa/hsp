@@ -46,6 +46,7 @@ export function TrayContextProvider({
 }) {
   const [trays, setTrays] = useState<Entity[]>([
     make_new_arrivals(),
+    //
     make_morgue(),
     make_doctor(),
     make_doctor(),
