@@ -53,7 +53,7 @@ class Variables {
 
   // Ticks
   burial_time: number = 50;
-  new_arrival_spawn_rate: number = 50;
+  new_arrival_spawn_rate: number = 20;
 }
 
 export const constants = new Constants();
